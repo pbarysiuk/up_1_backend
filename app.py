@@ -121,7 +121,12 @@ def drugbank_import():
 
 @app.route('/drugbank/export')
 def drugbank_export():
-    return drugbank_exporter.execute()
+    return drugbank_exporter.export_smiles_amino_acid_sequences()
+
+
+@app.route('/drugbank/export-false')
+def drugbank_export_false():
+    return drugbank_exporter.export_false_smiles_amino_acid_sequences()
 
 
 @app.route('/natural_products/query/<string:query>')
