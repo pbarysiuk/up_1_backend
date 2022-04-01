@@ -29,16 +29,19 @@ def execute():
             if "carriers" in drug:
                 for carrier in drug["carriers"]:
                     for polypeptide in carrier["polypeptides"]:
-                        amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
+                        if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
+                            amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
             if "targets" in drug:
                 for target in drug["targets"]:
                     for polypeptide in target["polypeptides"]:
-                        amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
+                        if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
+                            amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
 
             if "enzymes" in drug:
                 for enzyme in drug["enzymes"]:
                     for polypeptide in enzyme["polypeptides"]:
-                        amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
+                        if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
+                            amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
 
             for sequence in amino_acid_sequences:
                 writer.writerow([smiles, sequence])
