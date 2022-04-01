@@ -24,24 +24,8 @@ def execute():
                 continue
 
             smiles = drug["calculated_properties"]["SMILES"]
-            amino_acid_sequences = list()
 
-            if "carriers" in drug:
-                for carrier in drug["carriers"]:
-                    for polypeptide in carrier["polypeptides"]:
-                        if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
-                            amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
-            if "targets" in drug:
-                for target in drug["targets"]:
-                    for polypeptide in target["polypeptides"]:
-                        if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
-                            amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
-
-            if "enzymes" in drug:
-                for enzyme in drug["enzymes"]:
-                    for polypeptide in enzyme["polypeptides"]:
-                        if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
-                            amino_acid_sequences.append(polypeptide["amino_acid_sequence"])
+            amino_acid_sequences = get_amino_acid_sequences(drug)
 
             for sequence in amino_acid_sequences:
                 writer.writerow([smiles, sequence])
@@ -50,3 +34,16 @@ def execute():
                      mimetype='text/csv',
                      attachment_filename='export.csv',
                      as_attachment=True)
+
+
+def get_amino_acid_sequences(drug):
+    amino_acid_sequences = list()
+    attributes = ["carriers", "targets", "enzymes"]
+    for attribute in attributes:
+        if attribute in drug:
+            for attr in drug[attribute]:
+                for polypeptide in attr["polypeptides"]:
+                    if polypeptide["amino_acid_sequence"] not in amino_acid_sequences:
+                        amino_acid_sequences.append(polypeptide["amino_acid_sequence"].split("\n", 1)[1])
+
+    return amino_acid_sequences
