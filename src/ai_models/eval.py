@@ -1,7 +1,7 @@
 from pubchempy import get_compounds
 
-from src.solubility.eval import run_inference as run_solubility
-from src.toxicity.eval import run_inference as run_toxicity
+from src.ai_models.solubility.eval import run_inference as run_solubility
+from src.ai_models.toxicity.eval import run_inference as run_toxicity
 
 
 def get_data(smiles: [str]) -> dict:

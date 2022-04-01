@@ -1,11 +1,66 @@
-# Prepaire_back
+
+# Prepaire Backend
+
+API to retrieve information from drugbank, natural products
+and execute AI models.
+
+
+## Tech Stack
+
+**Client:** React, Material-ui (mui)
+
+**Server:** Python, Flask, MongoDB
 
 
 ## Dependencies
-- docker
-- docker-compose
-## Start
-Execute ``` ./bin/start.sh```
+
+Dependencies to run the project
+
+```
+docker
+docker-compose
+```
+
+## Environment Variables
+
+To run this project, you will need to add the following environment variables to your .env file
+
+There is a .env.example to copy from
+
+
+`MONGO_INITDB_ROOT_USERNAME`
+
+`MONGO_INITDB_ROOT_PASSWORD`
+
+`MONGODB_CONNSTRING`
+
+
+## Run Locally
+
+Clone the project
+
+```bash
+  git clone git@github.com:jordiigarciaa/Prepaire_back.git
+```
+
+Go to the project directory
+
+```bash
+  cd Prepaire_back
+```
+
+Install dependencies && Start the server
+
+```bash
+  ./bin/start
+```
+
+OR
+
+```bash
+  docker-compose build && docker-compose up -d && docker-compose logs -f
+```
+
 
 ## Getting Started
 Open a browser with http://localhost:5000 to see available options.
@@ -20,6 +75,27 @@ Download natural_products from http://oolonek.github.io/ISDB/ and use cat UNPD_D
 Put this file into src/natural_products
 
 Execute ```GET http://localhost:5000/natural_products/import```
+## Deployment
 
-## Deploy
-Execute ``` ./bin/deploy.sh```
+To deploy this project run
+
+```bash
+  ./bin/deploy
+```
+
+*You must have the proper .pem
+
+
+## Modules
+
+- Drugbank
+- Natural Products
+- AI - Models
+  - Solubility
+  - Toxicity
+
+
+## Authors
+
+- [@jordiigarciaa](https://www.github.com/jordiigarciaa)
+
