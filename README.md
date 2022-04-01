@@ -53,12 +53,13 @@ Install dependencies && Start the server
 
 ```bash
   ./bin/start
+  or
+  docker-compose build && docker-compose up -d && docker-compose logs -f  
 ```
 
-OR
-
+Sometimes api stops due to changes. To start only api, execute
 ```bash
-  docker-compose build && docker-compose up -d && docker-compose logs -f
+  docker-compose up -d api
 ```
 
 

@@ -5,7 +5,7 @@ import re
 from bson.json_util import dumps
 
 from src.shared import database
-from src.toxicity.eval import run_inference as run_toxicity
+from src.ai_models.toxicity.eval import run_inference as run_toxicity
 
 
 def find(drug_name: str, drug_id: str, props: str) -> [dict]:

@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from urllib.parse import unquote
 
-from src.eval import eval, get_data
+from src.ai_models.eval import eval, get_data
 from src.drugbank import \
     service, \
     value_calculator, \
