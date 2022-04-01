@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CONTAINER_NAME="$(docker ps --format "{{.Names}}" | grep prepaire_back_vicent_1)"
+
+if [[ -z ${CONTAINER_NAME} ]]; then
+echo "Container is not running.";
+exit 1;
+fi
+
+docker exec -it "${CONTAINER_NAME}" python $@

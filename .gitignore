@@ -1,0 +1,7 @@
+.idea
+*.iml
+data/
+.git
+.env
+drugbank_docs
+**/*.csv
