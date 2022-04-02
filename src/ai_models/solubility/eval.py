@@ -20,9 +20,8 @@ from deepchem.models import GraphConvModel
 from rdkit import Chem
 import os
 
-##### Variable pointing to the model folder needs to be updated when deploying!
+##### Variable pointing to the model folder
 dirname = os.path.dirname(__file__)
-print("dirname!", dirname)
 model_dir = filename = os.path.join(dirname, 'model')
 
 #### Load model

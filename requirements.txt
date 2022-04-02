@@ -64,3 +64,4 @@ wrapt==1.13.3
 zipp==3.7.0
 pymongo
 flask_cors
+tensorflow_addons

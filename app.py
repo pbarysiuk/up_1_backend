@@ -1,8 +1,10 @@
+from bson.json_util import dumps
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from urllib.parse import unquote
 
 from src.ai_models.eval import eval, get_data
+from src.ai_models.drug_interaction.eval import run_inference as run_drug_interaction
 from src.drugbank import \
     service, \
     value_calculator, \
@@ -147,6 +149,14 @@ def document(drug_id: str):
 @app.route('/eval')
 def eval_smiles():
     return get_data([unquote(request.args.get('smiles'))])
+
+
+@app.route('/drug-interaction', methods=['POST'])
+def drug_interaction():
+    data = request.get_json(force=True)
+    result = run_drug_interaction(data["smile1"], data["smile2"])
+    print(result)
+    return dumps(result)
 
 
 if __name__ == '__main__':
