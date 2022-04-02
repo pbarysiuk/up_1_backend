@@ -18,8 +18,7 @@ def invoke_model(drugs: np.array) -> [float]:
     x = np.transpose(drugs)
     x = x.reshape(1, 64, 64, 1)
     scores = model.predict(x) * 100
-    print(scores)
-    return[float(i[0]) for i in scores]
+    return scores.astype(np.float)[0][8]
 
 
 def run_inference(smile1, smile2):

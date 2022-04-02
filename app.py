@@ -155,7 +155,6 @@ def eval_smiles():
 def drug_interaction():
     data = request.get_json(force=True)
     result = run_drug_interaction(data["smile1"], data["smile2"])
-    print(result)
     return dumps(result)
 
 
