@@ -1,5 +1,6 @@
 def get():
-    return {1: '#Drug1 may increase the photosensitizing activities of #Drug2.',
+    return {0: "None",
+            1: '#Drug1 may increase the photosensitizing activities of #Drug2.',
             2: '#Drug1 may increase the anticholinergic activities of #Drug2.',
             3: 'The bioavailability of #Drug2 can be decreased when combined with #Drug1.',
             4: 'The metabolism of #Drug2 can be increased when combined with #Drug1.',
@@ -92,5 +93,4 @@ def get():
             84: '#Drug1 may increase the vasopressor activities of #Drug2.',
             85: '#Drug1 may increase the tachycardic activities of #Drug2.',
             86: 'The risk of a hypersensitivity reaction to #Drug2 is increased when it is combined with #Drug1.',
-            87: 'Unknown'
             }
