@@ -13,6 +13,7 @@ from src.drugbank import \
 from src.natural_products import \
     importer as natural_products_importer, \
     service as natural_products_service
+from src.lotus import service as lotus_service
 
 app = Flask(__name__)
 CORS(app)
@@ -144,6 +145,11 @@ def natural_products_import():
 @app.route('/document/<string:drug_id>')
 def document(drug_id: str):
     return service.document(drug_id)
+
+
+@app.route('/lotus/query/<string:query>')
+def lotus(query):
+    return lotus_service.query(unquote(query), int(request.args.get('page')))
 
 
 @app.route('/eval')
