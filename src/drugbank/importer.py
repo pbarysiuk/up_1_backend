@@ -32,6 +32,7 @@ def targets():
     dirname = os.path.dirname(__file__)
     drugbank_dir = os.path.join(dirname, '../../drugbank_docs')
     db.targets.drop()
+    db.targets.create_index("name", unique=True)
     for filename in os.listdir(drugbank_dir):
         file_path = os.path.join(drugbank_dir, filename)
         file = open(file_path)
@@ -57,7 +58,8 @@ def targets():
                 "amino_acid_sequence": amino_acid_sequence,
                 "gene_sequence": gene_sequence
             }
-            db.targets.insert_one(target)
+            key = {'name': tg["name"]}
+            db.targets.update_one(key, {"$set": target}, upsert=True)
+            #db.targets.insert_one(target)
         file.close()
-    db.targets.create_index("name", unique=True, dropDups=True)
     return "Import Done"
