@@ -40,8 +40,8 @@ def targets():
         for tg in targets:
             target = {
                 "name": tg["name"],
-                "amino_acid_sequence": tg["polypeptides"][0]["amino_acid_sequence"].split("\n", 1)[1],
-                "gene_sequence": tg["polypeptides"][0]["gene_sequence"].split("\n", 1)[1]
+                "amino_acid_sequence": tg["polypeptides"][0]["amino_acid_sequence"].split("\n", 1)[1].replace("\n", ""),
+                "gene_sequence": tg["polypeptides"][0]["gene_sequence"].split("\n", 1)[1].replace("\n", "")
             }
             db.targets.insert_one(target)
         file.close()
