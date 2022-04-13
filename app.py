@@ -1,20 +1,21 @@
+from urllib.parse import unquote
+
 from bson.json_util import dumps
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from urllib.parse import unquote
 
-from src.ai_models.eval import eval, get_data
 from src.ai_models.drug_interaction.eval import run_inference as run_drug_interaction
+from src.ai_models.eval import eval, get_data
 from src.documentation import api
 from src.drugbank import \
     service, \
     value_calculator, \
     importer as drugbank_importer, \
     exporter as drugbank_exporter
+from src.lotus import service as lotus_service
 from src.natural_products import \
     importer as natural_products_importer, \
     service as natural_products_service
-from src.lotus import service as lotus_service
 
 app = Flask(__name__)
 CORS(app)
@@ -33,7 +34,9 @@ def drugs(drug_names):
 
 @app.route('/drugbank')
 def drugbank():
-    return service.find(request.args.get('name'), request.args.get('id'), request.args.get('props'))
+    return service.find(drug_name=request.args.get('name'),
+                        drug_id=request.args.get('id'),
+                        props=request.args.get('props'))
 
 
 @app.route('/drugbank/value_calculator')
@@ -43,12 +46,23 @@ def calculator():
 
 @app.route('/drugbank/query/<string:query>')
 def drugbank_query(query):
-    return service.query(unquote(query), int(request.args.get('page')))
+    return service.query(query=unquote(query),
+                         page=int(request.args.get('page')))
+
+
+@app.route('/drugbank/targets/query/<string:query>')
+def drugbank_targets_query(query):
+    return service.query_targets(query=unquote(query))
 
 
 @app.route('/drugbank/import')
 def drugbank_import():
     return drugbank_importer.execute()
+
+
+@app.route('/drugbank/import/targets')
+def drugbank_targets_import():
+    return drugbank_importer.targets()
 
 
 @app.route('/drugbank/export')
@@ -68,7 +82,8 @@ def document(drug_id: str):
 
 @app.route('/natural_products/query/<string:query>')
 def natural_products_query(query):
-    return natural_products_service.query(unquote(query), int(request.args.get('page')))
+    return natural_products_service.query(query=unquote(query),
+                                          page=int(request.args.get('page')))
 
 
 @app.route('/natural_products/import')
@@ -78,12 +93,13 @@ def natural_products_import():
 
 @app.route('/lotus/query/<string:query>')
 def lotus(query):
-    return lotus_service.query(unquote(query), int(request.args.get('page')))
+    return lotus_service.query(query=unquote(query),
+                               page=int(request.args.get('page')))
 
 
 @app.route('/eval')
 def eval_smiles():
-    return get_data([unquote(request.args.get('smiles'))])
+    return get_data(smiles=[unquote(request.args.get('smiles'))])
 
 
 @app.route('/drug-interaction', methods=['POST'])

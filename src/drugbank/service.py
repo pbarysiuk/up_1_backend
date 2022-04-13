@@ -4,8 +4,8 @@ import re
 
 from bson.json_util import dumps
 
-from src.shared import database
 from src.ai_models.toxicity.eval import run_inference as run_toxicity
+from src.shared import database
 
 
 def find(drug_name: str, drug_id: str, props: str) -> [dict]:
@@ -56,8 +56,8 @@ def query(query: str, page: int) -> [dict]:
             }
         }
     ]}
-    drugs = db.drugs.find(filter, columns)\
-        .skip(page*10)\
+    drugs = db.drugs.find(filter, columns) \
+        .skip(page * 10) \
         .limit(10)
     count = db.drugs.count_documents(filter)
     return dumps({"count": count, "items": list(drugs)})
@@ -90,3 +90,14 @@ def document(drug_id: str) -> dict:
     data = json.load(file)
     file.close()
     return data
+
+
+def query_targets(query: str) -> [dict]:
+    db = database.get_connection()
+    targets = db.targets.find({
+        "name": {
+            "$regex": ".*{}.*".format(query),
+            "$options": "i"
+        }
+    })
+    return dumps(list(targets))
