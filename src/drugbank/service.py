@@ -28,7 +28,8 @@ def find(drug_name: str, drug_id: str, props: str) -> [dict]:
 
 def query(query: str, page: int) -> [dict]:
     db = database.get_connection()
-    columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties"]
+    columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+               "experimental_properties"]
     filter = {'$or': [
         {
             "clinical_description": {

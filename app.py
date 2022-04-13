@@ -5,6 +5,7 @@ from urllib.parse import unquote
 
 from src.ai_models.eval import eval, get_data
 from src.ai_models.drug_interaction.eval import run_inference as run_drug_interaction
+from src.documentation import api
 from src.drugbank import \
     service, \
     value_calculator, \
@@ -21,79 +22,7 @@ CORS(app)
 
 @app.route('/')
 def help():
-    return {
-        "endpoints": [
-            {
-                "GET /drugs/<string:drug_names>": {
-                    "description": "Eval solubility and toxicity from a given drug names split by :",
-                    "example": "drugs/favipiravir:aspirin",
-                    "output": {
-                        "not_found_drugs": "Array string of drug names not found",
-                        "drugname": {
-                            "smiles": "String",
-                            "solubility": "Float",
-                            "toxicity": {
-                                'NR-AR': "Float",
-                                'NR-AR-LBD': "Float",
-                                'NR-AhR': "Float",
-                                'NR-Aromatase': "Float",
-                                'NR-ER': "Float",
-                                'NR-ER-LBD': "Float",
-                                'NR-PPAR-gamma': "Float",
-                                'SR-ARE': "Float",
-                                'SR-ATAD5': "Float",
-                                'SR-HSE': "Float",
-                                'SR-MMP': "Float",
-                                'SR-p53': "Float"
-                            }
-                        }
-                    }
-                },
-                "GET /drugbank/value_calculator": {
-                    "description": "Get min and max value of all drugs in database of each required property",
-                },
-                "GET /drugbank": {
-                    "description": "Get drug selected info from drugbank",
-                    "filters": {
-                        "query_params": {
-                            "id": "String. Ex.: DB01234",
-                            "name": "String. Ex.: favipiravir",
-                            "props": "String split by : with props to retrieve. Ex: name:drug_interactions:targets",
-                        }
-                    },
-                    "example": "/drugbank?name=favipiravir&props=name:drug_interactions:targets",
-                    "output": {
-                        "drugbank_id": "String",
-                        "name": "String",
-                        "drug_interacions": "Array",
-                        "food_interactions": "Array",
-                        "calculatedProperties": "Array",
-                        "experimental_properties": "Array",
-                        "targets": "Array",
-                        "toxicity": {
-                            'NR-AR': "Float",
-                            'NR-AR-LBD': "Float",
-                            'NR-AhR': "Float",
-                            'NR-Aromatase': "Float",
-                            'NR-ER': "Float",
-                            'NR-ER-LBD': "Float",
-                            'NR-PPAR-gamma': "Float",
-                            'SR-ARE': "Float",
-                            'SR-ATAD5': "Float",
-                            'SR-HSE': "Float",
-                            'SR-MMP': "Float",
-                            'SR-p53': "Float"
-                        }
-                    }
-                },
-                "GET /document/<string:drugbank_id>": {
-                    "description": "Get drug full info from drugbank",
-                    "example": "/document/DB01234",
-                    "output": "Everything from drugbank"
-                }
-            }
-        ]
-    }
+    return api.endpoints()
 
 
 @app.route('/drugs/<string:drug_names>')
@@ -132,6 +61,11 @@ def drugbank_export_false():
     return drugbank_exporter.export_false_smiles_amino_acid_sequences()
 
 
+@app.route('/drugbank/document/<string:drug_id>')
+def document(drug_id: str):
+    return service.document(drug_id)
+
+
 @app.route('/natural_products/query/<string:query>')
 def natural_products_query(query):
     return natural_products_service.query(unquote(query), int(request.args.get('page')))
@@ -140,11 +74,6 @@ def natural_products_query(query):
 @app.route('/natural_products/import')
 def natural_products_import():
     return natural_products_importer.execute()
-
-
-@app.route('/document/<string:drug_id>')
-def document(drug_id: str):
-    return service.document(drug_id)
 
 
 @app.route('/lotus/query/<string:query>')
