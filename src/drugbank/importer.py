@@ -1,7 +1,7 @@
-import os
-from src.shared import database
-
 import json
+import os
+
+from src.shared import database
 
 
 def get_drug(data):
@@ -36,13 +36,28 @@ def targets():
         file_path = os.path.join(drugbank_dir, filename)
         file = open(file_path)
         data = json.load(file)
-        targets = data["targets"]
-        for tg in targets:
+        if "targets" not in data:
+            continue
+        for tg in data["targets"]:
+            if "polypeptides" not in tg or not len(tg["polypeptides"]):
+                continue
+
+            amino_acid_sequence = "-"
+            gene_sequence = "-"
+            if "amino_acid_sequence" in tg["polypeptides"][0] \
+                    and tg["polypeptides"][0]["amino_acid_sequence"] is not None:
+                amino_acid_sequence = tg["polypeptides"][0]["amino_acid_sequence"].split("\n", 1)[1].replace("\n", "")
+
+            if "gene_sequence" in tg["polypeptides"][0] \
+                    and tg["polypeptides"][0]["gene_sequence"] is not None:
+                gene_sequence = tg["polypeptides"][0]["gene_sequence"].split("\n", 1)[1].replace("\n", "")
+
             target = {
                 "name": tg["name"],
-                "amino_acid_sequence": tg["polypeptides"][0]["amino_acid_sequence"].split("\n", 1)[1].replace("\n", ""),
-                "gene_sequence": tg["polypeptides"][0]["gene_sequence"].split("\n", 1)[1].replace("\n", "")
+                "amino_acid_sequence": amino_acid_sequence,
+                "gene_sequence": gene_sequence
             }
             db.targets.insert_one(target)
         file.close()
+    db.targets.create_index("name", unique=True, dropDups=True)
     return "Import Done"
