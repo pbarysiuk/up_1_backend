@@ -4,3 +4,10 @@ PubChemPy~=1.0.4
 numpy~=1.22.3
 deepchem~=2.5.0
 tensorflow~=2.8.0
+DeepPurpose~=0.1.5
+MarkupSafe==1.1.1
+flask_cors
+tensorflow_addons
+rdkit-pypi==2021.9.4
+requests==2.22.0
+pandas-flavor

@@ -74,6 +74,16 @@ def endpoints():
                         "chemical_properties": "Array"
                     }
                 },
+                "GET /drugbank/target/query/<string:query>": {
+                    "description": "Search targets by name .",
+                    "example": "/drugbank/target/query/hydroxytryptamine",
+                    "output": {
+                        "_id": "String",
+                        "name": "String",
+                        "amino_acid_sequence": "String",
+                        "gene_sequence": "String"
+                    }
+                },
                 "GET /drugbank/document/<string:drugbank_id>": {
                     "description": "Get drug full info from drugbank",
                     "example": "/document/DB01234",

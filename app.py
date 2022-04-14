@@ -6,6 +6,7 @@ from flask_cors import CORS
 
 from src.ai_models.drug_interaction.eval import run_inference as run_drug_interaction
 from src.ai_models.eval import eval, get_data
+from src.ai_models.dti.eval import run_inference as run_dti
 from src.documentation import api
 from src.drugbank import \
     service, \
@@ -50,7 +51,7 @@ def drugbank_query(query):
                          page=int(request.args.get('page')))
 
 
-@app.route('/drugbank/targets/query/<string:query>')
+@app.route('/drugbank/target/query/<string:query>')
 def drugbank_targets_query(query):
     return service.query_targets(query=unquote(query))
 
@@ -60,7 +61,7 @@ def drugbank_import():
     return drugbank_importer.execute()
 
 
-@app.route('/drugbank/import/targets')
+@app.route('/drugbank/import/target')
 def drugbank_targets_import():
     return drugbank_importer.targets()
 
@@ -106,6 +107,13 @@ def eval_smiles():
 def drug_interaction():
     data = request.get_json(force=True)
     result = run_drug_interaction(data["smile1"], data["smile2"])
+    return dumps(result)
+
+
+@app.route('/dti', methods=['POST'])
+def dti():
+    data = request.get_json(force=True)
+    result = run_dti(data["drugs"], data["target"])
     return dumps(result)
 
 

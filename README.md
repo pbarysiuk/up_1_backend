@@ -76,6 +76,29 @@ Download natural_products from http://oolonek.github.io/ISDB/ and use cat UNPD_D
 Put this file into src/natural_products
 
 Execute ```GET http://localhost:5000/natural_products/import```
+
+To import lotus natural products, you'll need to connect through mongo and restore table lotusUniqueNaturalProduct
+Execute 
+```bash
+mongorestore -u AzureDiamondUsername --authenticationDatabase admin --db drugbank --collection lotusUniqueNaturalProduct --noIndexRestore lotusUniqueNaturalProduct.bson
+mongo -u AzureDiamondUsername
+db.lotusUniqueNaturalProduct.createIndex( {smiles: "hashed"})
+db.runCommand(
+  {
+    createIndexes: 'lotusUniqueNaturalProduct',
+    indexes: [
+        {
+            key: {
+                iupac_name:"text", traditional_name:"text", allTaxa:"text"
+            },
+            name: "superTextIndex",
+	    weights: { name:10, synonyms:5  }
+        }
+
+    ]
+  }
+)
+```
 ## Deployment
 
 To deploy this project run
