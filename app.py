@@ -113,9 +113,10 @@ def drug_interaction():
 @app.route('/dti', methods=['POST'])
 def dti():
     data = request.get_json(force=True)
-    result = run_dti(data["drugs"], data["target"])
+    result = run_dti(data["drugs"], data["target"]["id"])
     return dumps(result)
 
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
+

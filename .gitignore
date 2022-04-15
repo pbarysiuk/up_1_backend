@@ -6,4 +6,4 @@ data/
 drugbank_docs
 **/*.csv
 lotus_db
-venv/
+venv
