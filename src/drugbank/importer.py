@@ -11,7 +11,7 @@ drugbank_dir = os.path.join(dirname, '../../drugbank_docs')
 def get_drug(data):
     output = dict()
     props = ["drugbank_id", "name", "drug_interactions", "targets", "food_interactions", "calculated_properties",
-             "experimental_properties", "clinical_description", 'carriers', 'enzymes']
+             "experimental_properties", "clinical_description", 'carriers', 'enzymes', 'synonyms']
     for prop in props:
         output[prop] = data[prop]
     return output

@@ -72,7 +72,11 @@ Save documents at drugbank_docs at root of the project.
 
 Execute ```GET http://localhost:5000/drugbank/import```
 
-Download natural_products from http://oolonek.github.io/ISDB/ and use cat UNPD_DB.csv_* >> UNPD_DB.csv.
+Download natural_products from http://oolonek.github.io/ISDB/ and use 
+```bash
+cd /oolonek-ISDB-099d99a/Data/dbs 
+cat UNPD_DB.csv_* >> UNPD_DB.csv
+```
 Put this file into src/natural_products
 
 Execute ```GET http://localhost:5000/natural_products/import```
