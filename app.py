@@ -57,6 +57,11 @@ def drugbank_targets_query(query):
     return service.query_targets(query=unquote(query))
 
 
+@app.route('/drugbank/category/query/<string:query>')
+def drugbank_categories_query(query):
+    return service.query_categories(query=unquote(query))
+
+
 @app.route('/drugbank/import')
 def drugbank_import():
     return drugbank_importer.execute()

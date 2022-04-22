@@ -107,3 +107,14 @@ def query_targets(query: str) -> [dict]:
         }
     })
     return dumps(list(targets))
+
+
+def query_categories(query: str) -> [dict]:
+    db = database.get_connection()
+    categories = db.categories.find({
+        "name": {
+            "$regex": ".*{}.*".format(query),
+            "$options": "i"
+        }
+    })
+    return dumps(list(categories))
