@@ -19,7 +19,6 @@ from src.natural_products import \
     service as natural_products_service
 
 app = Flask(__name__)
-app.config['TESTING'] = True
 CORS(app)
 
 
@@ -60,6 +59,11 @@ def drugbank_targets_query(query):
 @app.route('/drugbank/category/query/<string:query>')
 def drugbank_categories_query(query):
     return service.query_categories(query=unquote(query))
+
+
+@app.route('/drugbank/drugs/category/<string:category_id>')
+def drugbank_drugs_by_category(category_id):
+    return service.drugbank_drugs_by_category(category_id, page=int(request.args.get('page')))
 
 
 @app.route('/drugbank/import')

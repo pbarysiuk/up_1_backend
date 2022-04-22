@@ -118,3 +118,14 @@ def query_categories(query: str) -> [dict]:
         }
     })
     return dumps(list(categories))
+
+
+def drugbank_drugs_by_category(category_id, page):
+    db = database.get_connection()
+    filter = {
+        "categories.drugbank_id": category_id
+    }
+    drugs = db.drugs.find(filter).skip(page * 10) \
+        .limit(10)
+    count = db.drugs.count_documents(filter)
+    return dumps({"count": count, "items": list(drugs)})
