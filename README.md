@@ -72,6 +72,10 @@ Save documents at drugbank_docs at root of the project.
 
 Execute ```GET http://localhost:5000/drugbank/import```
 
+Execute ```GET http://localhost:5000/drugbank/import/targets```
+
+Execute ```GET http://localhost:5000/drugbank/import/categories```
+
 Download natural_products from http://oolonek.github.io/ISDB/ and use 
 ```bash
 cd /oolonek-ISDB-099d99a/Data/dbs 

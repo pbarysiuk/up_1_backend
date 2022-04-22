@@ -19,6 +19,7 @@ from src.natural_products import \
     service as natural_products_service
 
 app = Flask(__name__)
+app.config['TESTING'] = True
 CORS(app)
 
 
@@ -61,9 +62,14 @@ def drugbank_import():
     return drugbank_importer.execute()
 
 
-@app.route('/drugbank/import/target')
+@app.route('/drugbank/import/targets')
 def drugbank_targets_import():
     return drugbank_importer.targets()
+
+
+@app.route('/drugbank/import/categories')
+def drugbank_categories_import():
+    return drugbank_importer.categories()
 
 
 @app.route('/drugbank/export')
