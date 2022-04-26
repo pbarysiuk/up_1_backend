@@ -26,46 +26,57 @@ def find(drug_name: str, drug_id: str, props: str) -> [dict]:
     return dumps(drug)
 
 
-def query(query: str, page: int) -> [dict]:
+def query(user_query: str, page: int, category: str) -> [dict]:
     db = database.get_connection()
     columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
-    filter = {'$or': [
-        {
-            "clinical_description": {
-                "$regex": ".*{}.*".format(query),
-                "$options": "i"
+    or_query = {
+        '$or': [
+            {
+                "clinical_description": {
+                    "$regex": ".*{}.*".format(user_query),
+                    "$options": "i"
+                }
+            },
+            {
+                "calculated_properties": {
+                    "$regex": ".*{}.*".format(user_query),
+                    "$options": "i"
+                }
+            },
+            {
+                "chemical_properties": {
+                    "$regex": ".*{}.*".format(user_query),
+                    "$options": "i"
+                }
+            },
+            {
+                "name": {
+                    "$regex": ".*{}.*".format(user_query),
+                    "$options": "i"
+                }
+            },
+            {
+                "synonyms": {
+                    "$regex": ".*{}.*".format(user_query),
+                    "$options": "i"
+                }
             }
-        },
-        {
-            "calculated_properties": {
-                "$regex": ".*{}.*".format(query),
-                "$options": "i"
-            }
-        },
-        {
-            "chemical_properties": {
-                "$regex": ".*{}.*".format(query),
-                "$options": "i"
-            }
-        },
-        {
-            "name": {
-                "$regex": ".*{}.*".format(query),
-                "$options": "i"
-            }
-        },
-        {
-            "synonyms": {
-                "$regex": ".*{}.*".format(query),
-                "$options": "i"
-            }
-        }
-    ]}
-    drugs = db.drugs.find(filter, columns) \
+        ]
+    }
+
+    where_query = {
+        "$and": [
+            or_query,
+        ],
+    }
+    if category is not None:
+        where_query["$and"].append({"categories.drugbank_id": category})
+
+    drugs = db.drugs.find(where_query, columns) \
         .skip(page * 10) \
         .limit(10)
-    count = db.drugs.count_documents(filter)
+    count = db.drugs.count_documents(where_query)
     return dumps({"count": count, "items": list(drugs)})
 
 
@@ -98,37 +109,37 @@ def document(drug_id: str) -> dict:
     return data
 
 
-def query_targets(query: str) -> [dict]:
+def query_targets(user_query: str) -> [dict]:
     db = database.get_connection()
     targets = db.targets.find({
         "name": {
-            "$regex": ".*{}.*".format(query),
+            "$regex": ".*{}.*".format(user_query),
             "$options": "i"
         }
     })
     return dumps(list(targets))
 
 
-def query_categories(query: str, page: int) -> [dict]:
+def query_categories(user_query: str, page: int) -> [dict]:
     db = database.get_connection()
-    filter = {
+    where_query = {
         "name": {
-            "$regex": ".*{}.*".format(query),
+            "$regex": ".*{}.*".format(user_query),
             "$options": "i"
         }
     }
-    categories = db.categories.find(filter).skip(page * 10) \
+    categories = db.categories.find(where_query).skip(page * 10) \
         .limit(10)
-    count = db.drugs.count_documents(filter)
+    count = db.drugs.count_documents(where_query)
     return dumps({"count": count, "items": list(categories)})
 
 
 def drugbank_drugs_by_category(category_id, page):
     db = database.get_connection()
-    filter = {
+    where_query = {
         "categories.drugbank_id": category_id
     }
-    drugs = db.drugs.find(filter).skip(page * 10) \
+    drugs = db.drugs.find(where_query).skip(page * 10) \
         .limit(10)
-    count = db.drugs.count_documents(filter)
+    count = db.drugs.count_documents(where_query)
     return dumps({"count": count, "items": list(drugs)})

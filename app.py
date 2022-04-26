@@ -47,18 +47,19 @@ def calculator():
 
 @app.route('/drugbank/query/<string:query>')
 def drugbank_query(query):
-    return service.query(query=unquote(query),
-                         page=int(request.args.get('page')))
+    return service.query(user_query=unquote(query),
+                         page=int(request.args.get('page')),
+                         category=request.args.get('category'))
 
 
 @app.route('/drugbank/target/query/<string:query>')
 def drugbank_targets_query(query):
-    return service.query_targets(query=unquote(query))
+    return service.query_targets(user_query=unquote(query))
 
 
 @app.route('/drugbank/category/query/<string:query>')
 def drugbank_categories_query(query):
-    return service.query_categories(query=unquote(query), page=int(request.args.get('page')))
+    return service.query_categories(user_query=unquote(query), page=int(request.args.get('page')))
 
 
 @app.route('/drugbank/drugs/category/<string:category_id>')
