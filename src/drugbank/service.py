@@ -29,7 +29,7 @@ def find(drug_name: str, drug_id: str, props: str) -> [dict]:
 def query(query: str, page: int) -> [dict]:
     db = database.get_connection()
     columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
-               "experimental_properties", "synonyms"]
+               "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
     filter = {'$or': [
         {
             "clinical_description": {
@@ -109,15 +109,18 @@ def query_targets(query: str) -> [dict]:
     return dumps(list(targets))
 
 
-def query_categories(query: str) -> [dict]:
+def query_categories(query: str, page: int) -> [dict]:
     db = database.get_connection()
-    categories = db.categories.find({
+    filter = {
         "name": {
             "$regex": ".*{}.*".format(query),
             "$options": "i"
         }
-    })
-    return dumps(list(categories))
+    }
+    categories = db.categories.find(filter).skip(page * 10) \
+        .limit(10)
+    count = db.drugs.count_documents(filter)
+    return dumps({"count": count, "items": list(categories)})
 
 
 def drugbank_drugs_by_category(category_id, page):

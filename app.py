@@ -58,7 +58,7 @@ def drugbank_targets_query(query):
 
 @app.route('/drugbank/category/query/<string:query>')
 def drugbank_categories_query(query):
-    return service.query_categories(query=unquote(query))
+    return service.query_categories(query=unquote(query), page=int(request.args.get('page')))
 
 
 @app.route('/drugbank/drugs/category/<string:category_id>')
