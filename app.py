@@ -18,6 +18,8 @@ from src.natural_products import \
     importer as natural_products_importer, \
     service as natural_products_service
 
+from src.drughshot import service as drughshot_service
+
 app = Flask(__name__)
 CORS(app)
 
@@ -130,6 +132,13 @@ def drug_interaction():
 def dti():
     data = request.get_json(force=True)
     result = run_dti(data["drugs"], data["target"]["id"])
+    return dumps(result)
+
+
+@app.route('/drugshot/api/search', methods=['POST'])
+def drugshot_api_search():
+    data = request.get_json(force=True)
+    result = drughshot_service.search(data)
     return dumps(result)
 
 
