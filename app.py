@@ -142,6 +142,13 @@ def drugshot_api_search():
     return dumps(result)
 
 
+@app.route('/drugshot/api/associate', methods=['POST'])
+def drugshot_api_associate():
+    data = request.get_json(force=True)
+    result = drughshot_service.associate(data)
+    return dumps(result)
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
 
