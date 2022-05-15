@@ -99,6 +99,7 @@ def parse_drug_target(collection, file_path):
 def import_target(collection, tg):
     amino_acid_sequence = "-"
     gene_sequence = "-"
+    pdb_ids = []
     if "polypeptides" in tg and len(tg["polypeptides"]):
         if "amino_acid_sequence" in tg["polypeptides"][0] \
                 and tg["polypeptides"][0]["amino_acid_sequence"] is not None:
@@ -107,11 +108,13 @@ def import_target(collection, tg):
         if "gene_sequence" in tg["polypeptides"][0] \
                 and tg["polypeptides"][0]["gene_sequence"] is not None:
             gene_sequence = tg["polypeptides"][0]["gene_sequence"].split("\n", 1)[1].replace("\n", "")
-
+        if "pdb_ids" in tg["polypeptides"][0]:
+            pdb_ids = tg["polypeptides"][0]["pdb_ids"]
     target = {
         "id": tg["id"],
         "name": tg["name"],
         "organism": tg["organism"],
+        "pdb_ids": pdb_ids,
         "amino_acid_sequence": amino_acid_sequence,
         "gene_sequence": gene_sequence
     }
