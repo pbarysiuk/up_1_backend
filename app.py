@@ -19,6 +19,7 @@ from src.natural_products import \
     service as natural_products_service
 
 from src.drughshot import service as drughshot_service
+from src.dosage import importer as dosage_importer
 
 app = Flask(__name__)
 CORS(app)
@@ -149,6 +150,12 @@ def drugshot_api_associate():
     return dumps(result)
 
 
+@app.route('/dosage/import', methods=['GET'])
+def dosage_import():
+    result = dosage_importer.execute()
+    return dumps(result)
+
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)
 
