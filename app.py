@@ -20,6 +20,9 @@ from src.natural_products import \
 
 from src.drughshot import service as drughshot_service
 
+from src.users import service as usersService 
+from src.auth import service as authService 
+
 app = Flask(__name__)
 CORS(app)
 
@@ -148,6 +151,9 @@ def drugshot_api_associate():
     result = drughshot_service.associate(data)
     return dumps(result)
 
+
+usersService.initService(app)
+authService.initService(app)
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

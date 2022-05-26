@@ -64,6 +64,12 @@ Sometimes api stops due to changes. To start only api, execute
 
 
 ## Getting Started
+
+Insert the default admin by executing ```GET http://localhost:5000/users/insertDefaultUser```
+Credentials for the default user are:
+email: admin@prepaire.com
+password: Prepaire@dmin
+
 Open a browser with http://localhost:5000 to see available options.
 To set up initial DB, you can get some documents for drugbank at http://prepaire.net:5000/document/DB01234
 changing DB01234 for range 00001 to 15000.
@@ -86,6 +92,8 @@ Put this file into src/natural_products
 Execute ```GET http://localhost:5000/natural_products/import```
 
 To import lotus natural products, you'll need to connect through mongo and restore table lotusUniqueNaturalProduct
+First download it from here https://lotus.naturalproducts.net/download
+
 Execute 
 ```bash
 mongorestore -u AzureDiamondUsername --authenticationDatabase admin --db drugbank --collection lotusUniqueNaturalProduct --noIndexRestore lotusUniqueNaturalProduct.bson
