@@ -11,3 +11,5 @@ tensorflow_addons
 rdkit-pypi==2021.9.4
 requests==2.22.0
 pandas-flavor
+pyjwt
+boto3

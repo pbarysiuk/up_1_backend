@@ -21,6 +21,9 @@ from src.natural_products import \
 from src.drughshot import service as drughshot_service
 from src.dosage import importer as dosage_importer
 
+from src.users import service as usersService 
+from src.auth import service as authService 
+
 app = Flask(__name__)
 CORS(app)
 
@@ -155,7 +158,9 @@ def dosage_import():
     result = dosage_importer.execute()
     return dumps(result)
 
-
+usersService.initService(app)
+authService.initService(app)
+  
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001)
 
