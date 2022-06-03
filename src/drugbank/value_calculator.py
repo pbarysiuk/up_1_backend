@@ -85,7 +85,7 @@ def calculator():
     for drug in drugs:
         for attribute in ret.keys():
             for property in ret[attribute].keys():
-                if property is "ALOGPS":
+                if property == "ALOGPS":
                     for subproperty in ret[attribute][property]:
                         if attribute not in drug or drug[attribute] is None or \
                                 property not in drug[attribute] or drug[attribute][property] is None or \
