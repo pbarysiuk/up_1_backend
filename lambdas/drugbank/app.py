@@ -1,8 +1,6 @@
 import json
 from urllib.parse import unquote
-from src.drugbank import value_calculator, service, importer
-# import requests
-
+from src.drugbank import value_calculator, service
 
 def drugbank(event, context):
     drug_name= None

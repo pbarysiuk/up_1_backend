@@ -1,11 +1,10 @@
 from bson.json_util import dumps
 
-from src.shared.database import Database
+from src.shared import database
 
 
-def query(query: str, page: int):
-    dbConnection = (Database())
-    db = dbConnection.db
+def query(query: str, page: int) -> [dict]:
+    db = database.get_connection()
     filter = {'$or': [
         {
             "traditional_name": {

@@ -1,10 +1,9 @@
-from src.shared.database import Database
+from src.shared import database
 import re
 
 
 def calculator():
-    dbConnection = (Database())
-    db = dbConnection.db
+    db = database.get_connection()
     drugs = db.drugs.find()
     ret = {
         "experimental_properties": {

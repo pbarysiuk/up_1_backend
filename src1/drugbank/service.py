@@ -4,26 +4,28 @@ import re
 
 from bson.json_util import dumps
 
-from src.shared.database import Database
+from src.shared import database
 
 
-def find(drug_name: str, drug_id: str, props: str):
-    dbConnection = (Database())
-    db = dbConnection.db
+def find(drug_name: str, drug_id: str, props: str) -> [dict]:
+    db = database.get_connection()
+
     props_list = props and props.split(":") or []
     if not "calculated_properties" in props_list and "toxicity" in props_list:
         props_list.append("calculated_properties")
 
     query = get_query(drug_id, drug_name)
     drug = db.drugs.find_one(query, props_list)
+
     if drug is None:
         raise Exception("drug not found")
+
+
     return dumps(drug)
 
 
-def query(user_query: str, page: int, category: str):
-    dbConnection = (Database())
-    db = dbConnection.db
+def query(user_query: str, page: int, category: str) -> [dict]:
+    db = database.get_connection()
     columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
     or_query = {
@@ -97,9 +99,8 @@ def document(drug_id: str) -> dict:
     return data
 
 
-def query_targets(user_query: str):
-    dbConnection = (Database())
-    db = dbConnection.db
+def query_targets(user_query: str) -> [dict]:
+    db = database.get_connection()
     targets = db.targets.find({
         "name": {
             "$regex": ".*{}.*".format(user_query),
@@ -109,9 +110,8 @@ def query_targets(user_query: str):
     return dumps(list(targets))
 
 
-def query_categories(user_query: str, page: int):
-    dbConnection = (Database())
-    db = dbConnection.db
+def query_categories(user_query: str, page: int) -> [dict]:
+    db = database.get_connection()
     where_query = {
         "name": {
             "$regex": ".*{}.*".format(user_query),
@@ -125,8 +125,7 @@ def query_categories(user_query: str, page: int):
 
 
 def drugbank_drugs_by_category(category_id, page):
-    dbConnection = (Database())
-    db = dbConnection.db
+    db = database.get_connection()
     where_query = {
         "categories.drugbank_id": category_id
     }
