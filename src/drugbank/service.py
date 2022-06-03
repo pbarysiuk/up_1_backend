@@ -16,6 +16,12 @@ def find(drug_name: str, drug_id: str, props: str):
         query = get_query(drug_id, drug_name)
         drug = db.drugs.find_one(query, props_list)
         if drug is None:
+            return {
+                "isBase64Encoded": False,
+                "statusCode": 404,
+                "headers": { "Access-Control-Allow-Origin": "*" },
+                "body": dumps({})
+        }
             raise Exception("drug not found")
         return GeneralWrapper.successResult(drug)
     except Exception as e:
@@ -100,8 +106,12 @@ def document(drug_id: str) -> dict:
     return data
 
 
-def query_targets(user_query: str):
+def query_targets(user_query: str, page = None, pageSize = None):
     try:
+        if not page:
+            page = 0
+        if not pageSize:
+            pageSize = 100
         dbConnection = (Database())
         db = dbConnection.db
         targets = db.targets.find({
@@ -109,7 +119,7 @@ def query_targets(user_query: str):
                 "$regex": ".*{}.*".format(user_query),
                 "$options": "i"
             }
-        })
+        }).skip(page * pageSize).limit(pageSize)
         return GeneralWrapper.successResult(list(targets))
     except Exception as e:
         return GeneralWrapper.generalErrorResult(e)

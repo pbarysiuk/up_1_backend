@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from os import environ
 import boto3
-
+from json import loads
 class Database:
     def __init__(self):
         connectionString = environ.get("MONGODB_CONNSTRING")
@@ -19,5 +19,5 @@ class Database:
         session = boto3.session.Session()
         client = session.client(service_name='secretsmanager', region_name=region_name)
         get_secret_value_response = client.get_secret_value(SecretId=secret_name)
-        return get_secret_value_response['SecretString']['MONGODB_CONNSTRING']
+        return loads(get_secret_value_response['SecretString'])['MONGODB_CONNSTRING']
         
