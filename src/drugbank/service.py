@@ -4,7 +4,6 @@ import re
 
 from bson.json_util import dumps
 
-from src.ai_models.toxicity.eval import run_inference as run_toxicity
 from src.shared import database
 
 
@@ -21,7 +20,6 @@ def find(drug_name: str, drug_id: str, props: str) -> [dict]:
     if drug is None:
         raise Exception("drug not found")
 
-    get_toxicity(drug, props_list)
 
     return dumps(drug)
 
@@ -89,14 +87,6 @@ def get_query(drug_id, drug_name):
         ret["drugbank_id"] = drug_id
     return ret
 
-
-def get_toxicity(drug, props_list):
-    if "toxicity" in props_list:
-        smiles = drug["calculated_properties"]["SMILES"]
-        toxicity = run_toxicity([smiles])
-        drug["toxicity"] = dict()
-        for key in toxicity:
-            drug['toxicity'][key] = float(toxicity[key][0])
 
 
 def document(drug_id: str) -> dict:
