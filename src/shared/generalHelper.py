@@ -1,7 +1,7 @@
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 import re
-import hashlib
+#import hashlib
 from bson.objectid import ObjectId
 
 class GeneralHelper:
@@ -14,9 +14,9 @@ class GeneralHelper:
             return id
         return ObjectId(id)
 
-    @staticmethod
-    def hash(password):
-        return hashlib.md5(password.encode()).hexdigest()
+    #@staticmethod
+    #def hash(password):
+    #    return hashlib.md5(password.encode()).hexdigest()
 
     @staticmethod
     def checkId(id, errorCode):

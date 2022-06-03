@@ -11,26 +11,11 @@ Globals:
     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: hello_world/
-      Handler: app.lambda_handler
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: get
-
   DrugbankFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: drugbank/
-      Handler: app.drugbank
+      Handler: drugbank.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
@@ -40,27 +25,12 @@ Resources:
           Properties:
             Path: /drugbank
             Method: get
-
-  DrugbankValueCalculatorFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: drugbank/
-      Handler: app.calculator
-      Runtime: python3.9
-      Architectures:
-        - x86_64
-      Events:
-        Event:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /drugbank/value_calculator
-            Method: get
-
+            
   DrugbankQueryFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: drugbank/
-      Handler: app.drugbankQuery
+      Handler: drugbankQuery.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
@@ -75,7 +45,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: drugbank/
-      Handler: app.targetsQuery
+      Handler: targetsQuery.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
@@ -90,7 +60,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: drugbank/
-      Handler: app.categoriesQuery
+      Handler: categoriesQuery.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
@@ -105,7 +75,7 @@ Resources:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: drugbank/
-      Handler: app.drugsByCategory
+      Handler: drugsByCategory.lambda_handler
       Runtime: python3.9
       Architectures:
         - x86_64
@@ -115,6 +85,38 @@ Resources:
           Properties:
             Path: /drugbank/drugs/category/{category_id}
             Method: get
+
+  LotusQueryFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: lotus/
+      Handler: query.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        Event:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /lotus/query/{query}
+            Method: get
+
+  NaturalProductsQueryFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: natural_products/
+      Handler: query.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Events:
+        Event:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /natural_products/query/{query}
+            Method: get
+
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

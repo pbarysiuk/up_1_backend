@@ -2,9 +2,9 @@ import json
 
 # import requests
 
-from src.natural_products import service
+from src.lotus import service
 
-#/natural_products/query/{query}
+#/lotus/query/<string:query>
 def lambda_handler(event, context):
     query = event['pathParameters']['query']
     page = 0
