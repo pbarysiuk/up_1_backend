@@ -8,3 +8,4 @@ drugbank_docs
 lotus_db
 venv
 __pycache__/
+.vscode
