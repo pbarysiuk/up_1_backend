@@ -2,7 +2,6 @@ pymongo~=4.0.2
 PubChemPy~=1.0.4
 numpy~=1.22.3
 MarkupSafe==1.1.1
-rdkit-pypi==2021.9.4
 requests==2.22.0
 pyjwt
 boto3
