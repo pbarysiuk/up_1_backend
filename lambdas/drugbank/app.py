@@ -5,9 +5,13 @@ from src.drugbank import value_calculator, service, importer
 
 
 def drugbank(event, context):
-    drug_name= event['queryStringParameters']['name'] 
-    drug_id= event['queryStringParameters']['id']
-    props= event['queryStringParameters']['props'] 
+    drug_name= None
+    drug_id= None
+    props= None
+    if event['queryStringParameters']:
+        drug_name= event['queryStringParameters'].get('name') 
+        drug_id= event['queryStringParameters'].get('id')
+        props= event['queryStringParameters'].get('props') 
     return service.find(drug_name=drug_name, drug_id=drug_id, props=props)
 
 def calculator(event, context):
@@ -15,8 +19,11 @@ def calculator(event, context):
 
 def drugbankQuery(event, context):
     query = event['pathParameters']['query']
-    page= event['queryStringParameters']['page'] 
-    category= event['queryStringParameters']['category'] 
+    page= None
+    category= None
+    if event['queryStringParameters']:
+        page= event['queryStringParameters'].get('page') 
+        category= event['queryStringParameters'].get('category')
     return service.query(user_query=unquote(query), page=int(page), category=category)
 
 def targetsQuery(event, context):
@@ -25,12 +32,16 @@ def targetsQuery(event, context):
 
 def categoriesQuery(event, context):
     query = event['pathParameters']['query']
-    page= event['queryStringParameters']['page'] 
+    page = 0
+    if event['queryStringParameters']:
+        page= event['queryStringParameters'].get('page') 
     return service.query_categories(user_query=unquote(query), page=int(page))
 
 def drugsByCategory(event, context):
     category_id = event['pathParameters']['category_id']
-    page= event['queryStringParameters']['page'] 
+    page = 0
+    if event['queryStringParameters']:
+        page= event['queryStringParameters'].get('page') 
     return service.drugbank_drugs_by_category(category_id, page=int(page))
 
 

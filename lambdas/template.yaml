@@ -83,7 +83,7 @@ Resources:
         Event:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
-            Path: /drugbank/category/query/{query}
+            Path: /drugbank/target/query/{query}
             Method: get
 
   DrugbankCategoriesQueryFunction:
