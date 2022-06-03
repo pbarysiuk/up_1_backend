@@ -2,7 +2,7 @@ from urllib.parse import unquote
 from src.drugbank import service
 
 def lambda_handler(event, context):
-    query = event['pathParameters']['query']
+    query = event['pathParameters']['proxy']
     page= None
     category= None
     if event['queryStringParameters']:

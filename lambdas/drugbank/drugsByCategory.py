@@ -1,7 +1,7 @@
 from src.drugbank import service
 
 def lambda_handler(event, context):
-    category_id = event['pathParameters']['category_id']
+    category_id = event['pathParameters']['proxy']
     page = 0
     if event['queryStringParameters']:
         page= event['queryStringParameters'].get('page') 
