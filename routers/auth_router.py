@@ -26,7 +26,3 @@ def initService(flaskApp):
     def forgetPasswordSecondStep():
         data = request.get_json(force=True)
         return BusinessAuth.forgetPasswordSecondStep(requestId = data["request_forget_password_id"], code=data["code"], password=data["password"])
-
-
-    
-    

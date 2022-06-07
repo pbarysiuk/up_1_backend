@@ -1,4 +1,3 @@
-from urllib.parse import unquote
 from src.drugbank import service
 
 def lambda_handler(event, context):

@@ -3,61 +3,22 @@ from src.shared.exceptions.responseCodes import ResponseCodes
 from src.shared.exceptions.responseMessages import ResponseMessages
 from src.shared.generalHelper import GeneralHelper
 from src.shared.generalWrapper import GeneralWrapper
-from src.shared import database
 from src.shared.jwt import Jwt
 import traceback
-from os import environ
-import boto3
-from botocore.exceptions import ClientError
 from random import randint
 from datetime import timezone,datetime
+from src.shared.emails import Email
+from src.shared.database import Database
 
 class BusinessAuth:
-    @staticmethod
-    def __sendVerificationEmail(toEmail, verificationCode):
-        sender = environ.get('EMAIL_SENDER')
-        awsRegion=environ.get('EMAIL_AWS_REGION')
-        charset = "utf-8"
-        awsCred = {
-            "aws_access_key_id":environ.get('AWS_ACCESS_KEY'),
-            "aws_secret_access_key":environ.get('AWS_SECRET_KEY') 
-        }
-        client = boto3.client('ses',**awsCred, region_name=awsRegion)
-        try:
-            response = client.send_email(
-                Destination={
-                    "ToAddresses": [
-                        toEmail,
-                    ],
-                },
-                Message={
-                    "Body": {
-                        "Text": {
-                            "Charset": charset,
-                            "Data": "Your reset password is: " + str(verificationCode),
-                        }
-                    },
-                    "Subject": {
-                        "Charset": charset,
-                        "Data": "Prepaire forget password",
-                    },
-                },
-                Source=sender,
-            )
-        except ClientError as e:
-            print(e.response['Error']['Message'])
-        else:
-            print("Email sent! Message ID:"),
-            print(response['MessageId'])
-        return
-        
     @staticmethod
     def login(email, password):
         try:
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
             GeneralHelper.checkString(password, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkEmailFormat(email)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             query = {
                 "email" : email,
                 "password" : GeneralHelper.hash(password),
@@ -107,7 +68,8 @@ class BusinessAuth:
         try:
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
             GeneralHelper.checkEmailFormat(email)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             query = {
                 "email" : email,
                 "deleted_at" : None
@@ -124,7 +86,7 @@ class BusinessAuth:
                 "deleted_at" : None
             }
             insertResult = db.forget_password_requests.insert_one(forgetPasswordRequest)
-            BusinessAuth.__sendVerificationEmail(email, forgetPasswordCode)
+            Email.sendForgetPasswordEmail(email, forgetPasswordCode)
             result = {
                 "request_forget_password_id" : str(insertResult.inserted_id)
             }
@@ -140,7 +102,8 @@ class BusinessAuth:
         try:
             GeneralHelper.checkString(requestId, ResponseCodes.emptyOrInvalidForgetPasswordRequestId)
             id = GeneralHelper.getObjectId(requestId)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             query = {
                 "_id" : id,
                 "deleted_at" : None
@@ -166,7 +129,8 @@ class BusinessAuth:
             GeneralHelper.checkString(password, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkString(code, ResponseCodes.emptyOrInvalidForgetPasswordCode)
             id = GeneralHelper.getObjectId(requestId)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             query = {
                 "_id" : id,
                 "deleted_at" : None

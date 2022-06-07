@@ -10,7 +10,7 @@ def query(query: str, page: int):
         filter = {'$or': [
             {
                 "traditional_name": {
-                    "$regex": ".*{}.*".format(query),
+                    "$regex": query,
                     "$options": "i"
                 }
             },

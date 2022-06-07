@@ -1,6 +1,7 @@
 from bson.json_util import dumps
 from src.shared.database import Database
 from src.shared.generalWrapper import GeneralWrapper
+import traceback
 
 def query(query: str, page: int):
     try:
@@ -9,7 +10,7 @@ def query(query: str, page: int):
         filter = {'$or': [
             {
                 "cn": {
-                    "$regex": ".*{}.*".format(query),
+                    "$regex": query,
                     "$options": "i"
                 }
             },
@@ -19,4 +20,5 @@ def query(query: str, page: int):
         result = {"count": count, "items": list(products)}
         return GeneralWrapper.successResult(result)
     except Exception as e:
+        traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)

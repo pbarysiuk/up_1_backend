@@ -1,4 +1,4 @@
-from src.shared import database
+from src.shared.database import Database
 from src.shared.generalHelper import GeneralHelper
 from datetime import timezone,datetime
 from src.shared.exceptions.businessException import BusinessException
@@ -7,6 +7,7 @@ from src.shared.exceptions.responseMessages import ResponseMessages
 from src.shared.jwt import Jwt
 from src.shared.generalWrapper import GeneralWrapper
 import traceback
+from src.shared.emails import Email
 
 class BusinessUsers:
     @staticmethod
@@ -66,7 +67,8 @@ class BusinessUsers:
 
     @staticmethod
     def insertDefaultUser():
-        db = database.get_connection()
+        dbConnection = (Database())
+        db = dbConnection.db
         query = {
             'deleted_at': None,
             'role' : 'admin'
@@ -83,7 +85,8 @@ class BusinessUsers:
             payload = Jwt.checkAccessToken(token=token)
             GeneralHelper.checkString(oldPassword, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkString(newPassword, ResponseCodes.emptyOrInvalidPassword)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
             existedUser = BusinessUsers.__getById(db, userId, includePassword=True)
             if GeneralHelper.hash(oldPassword) != existedUser["password"]:
@@ -101,7 +104,8 @@ class BusinessUsers:
     def getProfile(token):
         try:
             payload = Jwt.checkAccessToken(token=token)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
             existedUser = BusinessUsers.__getById(db, userId)
             return GeneralWrapper.successResult(existedUser)
@@ -118,7 +122,8 @@ class BusinessUsers:
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
             GeneralHelper.checkString(name, ResponseCodes.emptyOrInvalidName)
             GeneralHelper.checkEmailFormat(email)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
             existedUser = BusinessUsers.__getById(db, userId, includePassword=False)
             BusinessUsers.__checkUniqueEmail(db, email, userId)
@@ -146,9 +151,11 @@ class BusinessUsers:
             GeneralHelper.checkString(name, ResponseCodes.emptyOrInvalidName)
             GeneralHelper.checkEmailFormat(email)
             BusinessUsers.__checkRole(role.lower())
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             BusinessUsers.__checkUniqueEmail(db, email)
             insertResult = BusinessUsers.__insertUser(db, name, email, GeneralHelper.hash(password), role.lower())
+            Email.sendCreateUserEmail(email, password)
             existedUser = BusinessUsers.__getById(db, insertResult.inserted_id)
             return GeneralWrapper.successResult(existedUser)
         except BusinessException as e:
@@ -167,7 +174,8 @@ class BusinessUsers:
             GeneralHelper.checkString(name, ResponseCodes.emptyOrInvalidName)
             GeneralHelper.checkEmailFormat(email)
             BusinessUsers.__checkRole(role.lower())
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             existedUser = BusinessUsers.__getById(db, userId)
             BusinessUsers.__checkUniqueEmail(db, email, userId)
             setQuery={
@@ -190,7 +198,8 @@ class BusinessUsers:
         try:
             Jwt.checkAccessToken(token, [Jwt.adminRole])
             userId = GeneralHelper.getObjectId(userId)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             existedUser = BusinessUsers.__getById(db, userId)
             setQuery={
                 "deleted_at" : datetime.now(tz=timezone.utc)
@@ -208,7 +217,8 @@ class BusinessUsers:
         try:
             Jwt.checkAccessToken(token, [Jwt.adminRole])
             userId = GeneralHelper.getObjectId(userId)
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             existedUser = BusinessUsers.__getById(db, userId)
             return GeneralWrapper.successResult(existedUser)
         except BusinessException as e:
@@ -256,7 +266,8 @@ class BusinessUsers:
                     }
                 ]
             }
-            db = database.get_connection()
+            dbConnection = (Database())
+            db = dbConnection.db
             users = db.users.find(query, projection).skip((page-1) * pageSize).limit(pageSize)
             count = db.users.count_documents(query)
             result = {
@@ -269,4 +280,3 @@ class BusinessUsers:
         except Exception as e:
             traceback.print_exc()
             return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
-

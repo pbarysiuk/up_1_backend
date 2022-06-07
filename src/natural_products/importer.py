@@ -2,7 +2,7 @@ import os
 import csv
 import sys
 
-from src.shared import database
+from src.shared.database import Database
 
 
 def execute():
@@ -12,7 +12,8 @@ def execute():
     dirname = os.path.dirname(__file__)
     db_file = os.path.join(dirname, './UNPD_DB.csv')
 
-    db = database.get_connection()
+    dbConnection = Database()
+    db = dbConnection.db
     db.natural_products.drop()
     with open(db_file, 'rt') as f:
         reader = csv.reader(f)

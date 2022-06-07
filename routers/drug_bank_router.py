@@ -2,7 +2,7 @@ from urllib.parse import unquote
 
 from flask import request
 
-from src.drugbank import value_calculator, service, exporter, importer
+from src.drugbank import value_calculator, service, importer
 
 
 def init_router(app):
@@ -34,6 +34,10 @@ def init_router(app):
     def drugs_by_category(category_id):
         return service.drugbank_drugs_by_category(category_id, page=int(request.args.get('page')))
 
+    @app.route('/drugbank/molecule/<string:query>')
+    def molecule_query(query):
+        return service.moleculeQuery(user_query=unquote(query))
+
     @app.route('/drugbank/import')
     def drugbank_import():
         return importer.execute()
@@ -46,14 +50,3 @@ def init_router(app):
     def categories_import():
         return importer.categories()
 
-    @app.route('/drugbank/export')
-    def export():
-        return exporter.export_smiles_amino_acid_sequences()
-
-    @app.route('/drugbank/export-false')
-    def export_false():
-        return exporter.export_false_smiles_amino_acid_sequences()
-
-    @app.route('/drugbank/document/<string:drug_id>')
-    def document(drug_id: str):
-        return service.document(drug_id)

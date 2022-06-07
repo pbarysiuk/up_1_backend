@@ -1,10 +1,11 @@
 import json
 import os
 import re
-
 from bson.json_util import dumps
 from src.shared.database import Database
 from src.shared.generalWrapper import GeneralWrapper
+import pymongo
+import traceback
 
 def find(drug_name: str, drug_id: str, props: str):
     try:
@@ -21,10 +22,10 @@ def find(drug_name: str, drug_id: str, props: str):
                 "statusCode": 404,
                 "headers": { "Access-Control-Allow-Origin": "*" },
                 "body": dumps({})
-        }
-            raise Exception("drug not found")
+            }
         return GeneralWrapper.successResult(drug)
     except Exception as e:
+        traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)
 
 
@@ -32,64 +33,140 @@ def query(user_query: str, page: int, category: str):
     try:
         dbConnection = (Database())
         db = dbConnection.db
+        molecules =  None
+        if category is None:
+            molecules = db.molecules.find({
+                "name" : {
+                    "$regex": user_query,
+                    "$options": "i"
+                }
+            }, {"name" : 1}).skip(page * 10).limit(10)
+        else:
+            molecules = db.molecules.find({
+                "name" : {
+                    "$regex": user_query,
+                    "$options": "i"
+                }
+            }, {"name" : 1})
+        names = [o['name'] for o in molecules]
+        or_query = {
+            "name" : {
+                "$in" : names
+            } 
+        }
         columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
                 "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
+        '''
         or_query = {
             '$or': [
                 {
                     "clinical_description": {
-                        "$regex": ".*{}.*".format(user_query),
-                        "$options": "i"
-                    }
-                },
-                {
-                    "calculated_properties": {
-                        "$regex": ".*{}.*".format(user_query),
-                        "$options": "i"
-                    }
-                },
-                {
-                    "chemical_properties": {
-                        "$regex": ".*{}.*".format(user_query),
+                        "$regex": user_query,
                         "$options": "i"
                     }
                 },
                 {
                     "name": {
-                        "$regex": ".*{}.*".format(user_query),
+                        "$regex": user_query,
                         "$options": "i"
                     }
                 },
                 {
-                    "synonyms": {
-                        "$regex": ".*{}.*".format(user_query),
+                    "synonyms.synonym": {
+                        "$regex": user_query,
                         "$options": "i"
                     }
                 }
             ]
         }
+        '''
         where_query = {
             "$and": [
                 or_query,
             ],
         }
+        hint = None
         if category is not None:
             where_query["$and"].append({"categories.drugbank_id": category})
-
-        drugs = db.drugs.find(where_query, columns) \
-            .skip(page * 10) \
-            .limit(10)
+            hint = [('categories.drugbank_id', pymongo.ASCENDING)]
+        drugs = None
+        if category is not None:
+            drugs = db.drugs.find(where_query, columns, hint = hint).skip(page * 10).limit(10)
+        else:
+            drugs = db.drugs.find(where_query, columns, hint = hint)
         count = db.drugs.count_documents(where_query)
         result = {"count": count, "items": list(drugs)}
         return GeneralWrapper.successResult(result)
     except Exception as e:
+        traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)
+
+
+def moleculeQuery(user_query: str):
+    try:
+        dbConnection = (Database())
+        db = dbConnection.db
+        molecules = db.molecules.find({
+            "name" : {
+                "$regex": user_query,
+                "$options": "i"
+            }
+        }, {"name" : 1}).limit(10)
+        names = [o['name'] for o in molecules]
+        or_query = {
+            "name" : {
+                "$in" : names
+            } 
+        }
+        columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
+        '''
+        or_query = {
+            '$or': [
+                {
+                    "clinical_description": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "name": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "synonyms.synonym": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                }
+            ]
+        }
+        '''
+        where_query = {
+            "$and": [
+                or_query,
+            ],
+        }    
+        drugs = db.drugs.find(where_query, columns)
+        count = db.drugs.count_documents(where_query)
+        result = {"count": count, "items": list(drugs)}
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+
+
 
 def get_query(drug_id, drug_name):
     regx = re.compile("^{}".format(drug_name), re.IGNORECASE)
     ret = {}
     if drug_name:
-        ret["name"] = regx
+        ret["name"] = {
+            "$regex": drug_name,
+            "$options": "i"
+        }
     if drug_id:
         ret["drugbank_id"] = drug_id
     return ret
@@ -116,12 +193,13 @@ def query_targets(user_query: str, page = None, pageSize = None):
         db = dbConnection.db
         targets = db.targets.find({
             "name": {
-                "$regex": ".*{}.*".format(user_query),
+                "$regex": user_query,
                 "$options": "i"
             }
         }).skip(page * pageSize).limit(pageSize)
         return GeneralWrapper.successResult(list(targets))
     except Exception as e:
+        traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)
 
 
@@ -131,16 +209,17 @@ def query_categories(user_query: str, page: int):
         db = dbConnection.db
         where_query = {
             "name": {
-                "$regex": ".*{}.*".format(user_query),
+                "$regex": user_query,
                 "$options": "i"
             }
         }
         categories = db.categories.find(where_query).skip(page * 10) \
             .limit(10)
-        count = db.drugs.count_documents(where_query)
+        count = db.categories.count_documents(where_query)
         result = {"count": count, "items": list(categories)}
         return GeneralWrapper.successResult(result)
     except Exception as e:
+        traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)
 
 
@@ -152,10 +231,10 @@ def drugbank_drugs_by_category(category_id, page):
         where_query = {
             "categories.drugbank_id": category_id
         }
-        drugs = db.drugs.find(where_query).skip(page * 10) \
-            .limit(10)
-        count = db.drugs.count_documents(where_query)
+        drugs = db.drugs.find(where_query, hint = [('categories.drugbank_id', pymongo.ASCENDING)]).skip(page * 10).limit(10)
+        count = db.drugs.count_documents(where_query, hint = [('categories.drugbank_id', pymongo.ASCENDING)])
         result = {"count": count, "items": list(drugs)}
         return GeneralWrapper.successResult(result)
     except Exception as e:
+        traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)

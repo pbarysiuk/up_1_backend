@@ -15,9 +15,7 @@ class GeneralWrapper:
     def generalErrorResult(e):
         result = {
             "message" : "An error occured",
-            "exceptionType" : type(e),
-            "exceptionMessage" : str(e),
-            "exceptionArgs" : e.args
+            "exceptionMessage" : str(e)
         }
         return {
             "isBase64Encoded": False,
@@ -32,4 +30,9 @@ class GeneralWrapper:
             "code" : code,
             "message" : message
         }
-        return dumps(data), GeneralHelper.getHttpStatusCode(code=code), {'Content-Type':'application/json'}
+        return {
+            "isBase64Encoded": False,
+            "statusCode": GeneralHelper.getHttpStatusCode(code=code),
+            "headers": { "Access-Control-Allow-Origin": "*" },
+            "body": dumps(data)
+        }

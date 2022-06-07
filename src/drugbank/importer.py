@@ -1,8 +1,6 @@
 import json
 import os
-# import gc
-
-from src.shared import database
+from src.shared.database import Database
 
 dirname = os.path.dirname(__file__)
 drugbank_dir = os.path.join(dirname, '../../drugbank_docs')
@@ -19,7 +17,8 @@ def get_drug(data):
 
 
 def execute():
-    db = database.get_connection()
+    dbConnection = (Database())
+    db = dbConnection.db
     db.drugs.drop()
     for filename in os.listdir(drugbank_dir):
         try:
@@ -39,7 +38,8 @@ def import_drug(collection, file_path: str):
 
 
 def categories():
-    db = database.get_connection()
+    dbConnection = (Database())
+    db = dbConnection.db
     db.categories.drop()
     db.categories.create_index("name", unique=True)
     for filename in os.listdir(drugbank_dir):
@@ -72,7 +72,8 @@ def import_category(collection, category):
 
 
 def targets():
-    db = database.get_connection()
+    dbConnection = (Database())
+    db = dbConnection.db
     db.targets.drop()
     db.targets.create_index("name", unique=True)
 
