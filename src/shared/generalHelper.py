@@ -27,6 +27,11 @@ class GeneralHelper:
     def checkString(string, errorCode):
         if string is None or type(string) != str or len(string) <= 0:
             raise BusinessException(errorCode)
+
+    @staticmethod
+    def checkArray(arr, errorCode):
+        if arr is None or (type(arr) != list) or len(arr) <= 0:
+            raise BusinessException(errorCode)
     
     @staticmethod
     def checkInteger(number, errorCode, allowSmallerThanZero = True):
