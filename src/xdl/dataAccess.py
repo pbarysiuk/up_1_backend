@@ -5,14 +5,13 @@ from src.shared.generalHelper import GeneralHelper
 
 class XdlDataAccess:
     @staticmethod
-    def add(db, drugsNames, filePath, xmlList, textList):
+    def add(db, filePath, drugs):
         nowDate = datetime.now(tz=timezone.utc)
         i = 0
-        while i < len(xmlList):
-            xml = xmlList[i]
-            text = textList[i]
-            name = drugsNames[i]
-
+        while i < len(drugs):
+            xml = drugs[i]['xml']
+            text = drugs[i]['text']
+            name = drugs[i]['name']
             xdl = {
                 "allDrugsNames" : [name],
                 "approvedDrugsNames" : [],

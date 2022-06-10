@@ -6,7 +6,7 @@ def init_router(flaskApp):
     @flaskApp.route('/xdl/add', methods=['POST'])
     def addXdl():
         data = request.get_json(force=True)
-        return XdlBusiness.add(drugsNames = data["drugsNames"], filePath=data["filePath"], xml = data['xml'], text=data['text'])
+        return XdlBusiness.add(drugs = data["drugs"], filePath=data["filePath"])
 
     @flaskApp.route('/xdl/getList', methods=['GET'])
     def getXdlList():

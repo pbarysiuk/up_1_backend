@@ -8,22 +8,17 @@ import traceback
 
 class XdlBusiness:
     @staticmethod
-    def add(drugsNames,  filePath, xml, text):
+    def add(drugs, filePath):
         try:
-            GeneralHelper.checkArray(drugsNames, ResponseCodes.emptyXdlName)
-            for drugName in drugsNames:
-                GeneralHelper.checkString(drugName, ResponseCodes.emptyXdlName)
             GeneralHelper.checkString(filePath, ResponseCodes.emptyXdlFilePath)
-            GeneralHelper.checkString(xml, ResponseCodes.emptyXdlXml)
-            GeneralHelper.checkString(text, ResponseCodes.emptyXdlText)
-            separator = '@#@'
-            xmlList = xml.split(separator)
-            txtList = text.split(separator)
-            if (len(xmlList) != len(txtList) or len(xmlList) != len(drugsNames)):
-                raise BusinessException(ResponseCodes.badXdlRequest)
+            GeneralHelper.checkArray(drugs, ResponseCodes.emptyXdlName)
+            for drug in drugs:
+                GeneralHelper.checkString(drug['name'], ResponseCodes.emptyXdlName)
+                GeneralHelper.checkString(drug['xml'], ResponseCodes.emptyXdlXml)
+                GeneralHelper.checkString(drug['text'], ResponseCodes.emptyXdlText)
             dbConnection = Database()
             db = dbConnection.db
-            XdlDataAccess.add(db, drugsNames, filePath, xmlList, txtList)
+            XdlDataAccess.add(db, filePath, drugs)
             return GeneralWrapper.successResult({})
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
