@@ -4,6 +4,7 @@ from src.shared.generalWrapper import GeneralWrapper
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 from src.xdl.dataAccess import XdlDataAccess
+from src.xdl.wrapper import XdlWrapper
 import traceback
 
 class XdlBusiness:
@@ -33,8 +34,8 @@ class XdlBusiness:
             GeneralHelper.checkInteger(pageSize, ResponseCodes.invalidPageSize, allowSmallerThanZero=False)
             dbConnection = Database()
             db = dbConnection.db
-            result = XdlDataAccess.getList(db, query, pageNumber, pageSize)
-            return GeneralWrapper.successResult(result)
+            count, items = XdlDataAccess.getList(db, query, pageNumber, pageSize)
+            return GeneralWrapper.successResult(XdlWrapper.listResult(items, count))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
@@ -48,9 +49,9 @@ class XdlBusiness:
             dbConnection = Database()
             db = dbConnection.db
             result = XdlDataAccess.getDetails(db, id)
-            if not (allowRejected) and (result['rejectedAt'] is not None):
+            if not (allowRejected) and (result['status'] == XdlDataAccess.status['rejected']):
                 raise BusinessException(ResponseCodes.xdlNotFound)
-            return GeneralWrapper.successResult(result)
+            return GeneralWrapper.successResult(XdlWrapper.detailsResult(result))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
@@ -67,8 +68,8 @@ class XdlBusiness:
             dbConnection = Database()
             db = dbConnection.db
             existedXdl = XdlDataAccess.getById(db, id)
-            if not ((approve and existedXdl['approvedAt'] is not None) or (not approve and existedXdl['rejectedAt'] is not None)):
-                XdlDataAccess.changeStatus(db, existedXdl, approve)
+            if not ((approve and existedXdl['status'] == XdlDataAccess.status['approved']) or (not approve and existedXdl['status'] == XdlDataAccess.status['rejected'])):
+                XdlDataAccess.changeStatus(db, existedXdl, approve, None)
             return GeneralWrapper.successResult({})
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
@@ -84,8 +85,8 @@ class XdlBusiness:
             GeneralHelper.checkInteger(pageSize, ResponseCodes.invalidPageSize, allowSmallerThanZero=False)
             dbConnection = Database()
             db = dbConnection.db
-            result = XdlDataAccess.search(db, query, pageNumber, pageSize)
-            return GeneralWrapper.successResult(result)
+            count, items = XdlDataAccess.search(db, query, pageNumber, pageSize)
+            return GeneralWrapper.successResult(XdlWrapper.searchResult(items, count))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:

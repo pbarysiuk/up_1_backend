@@ -1,8 +1,9 @@
 from urllib.parse import unquote
 
 from flask import request
+from importers import naturalProductsImporter
 
-from src.natural_products import importer, service
+from src.natural_products import service
 
 
 def init_router(app):
@@ -13,4 +14,4 @@ def init_router(app):
 
     @app.route('/natural_products/import')
     def natural_products_import():
-        return importer.execute()
+        return naturalProductsImporter.execute()

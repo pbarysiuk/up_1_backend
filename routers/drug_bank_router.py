@@ -1,8 +1,9 @@
 from urllib.parse import unquote
 
 from flask import request
+from importers import drugbankImporter
 
-from src.drugbank import value_calculator, service, importer
+from src.drugbank import value_calculator, service
 
 
 def init_router(app):
@@ -40,13 +41,13 @@ def init_router(app):
 
     @app.route('/drugbank/import')
     def drugbank_import():
-        return importer.execute()
+        return drugbankImporter.execute()
 
     @app.route('/drugbank/import/targets')
     def targets_import():
-        return importer.targets()
+        return drugbankImporter.targets()
 
     @app.route('/drugbank/import/categories')
     def categories_import():
-        return importer.categories()
+        return drugbankImporter.categories()
 
