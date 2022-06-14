@@ -1,9 +1,9 @@
 from urllib.parse import unquote
 
 from flask import request
-from importers import drugbankImporter
+from importers import drugbankImporter, value_calculator
 
-from src.drugbank import value_calculator, service
+from src.drugbank import service
 
 
 def init_router(app):
