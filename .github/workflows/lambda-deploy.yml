@@ -61,7 +61,7 @@ jobs:
 
     # only run there are changed files
       - if: ${{needs.changedfiles.outputs.layer}}
-        name: echo changed files
+        name: Deploy lambda layer
         run: ./.github/scripts/build-layer.sh
         env:
           FILES: ${{needs.changedfiles.outputs.layer}}
@@ -69,7 +69,7 @@ jobs:
           ENV: ${{ env.ENVIRONMENT }}
 
       - if: ${{needs.changedfiles.outputs.lambdas}}
-        name: echo changed files
+        name: Deploy lambda function
         run: ./.github/scripts/build-lambda.sh
         env:
           FILES: ${{needs.changedfiles.outputs.lambdas}}
