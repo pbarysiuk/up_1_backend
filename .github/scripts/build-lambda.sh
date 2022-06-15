@@ -7,7 +7,7 @@ func=`echo $file | awk -F '/' '{print $3}'`
 
 chmod 777 $file
 
-zip backend-$module-$func-$COMMITID.zip $file
+zip -j backend-$module-$func-$COMMITID.zip $file
 
 cp backend-$module-$func-$COMMITID.zip backend-$module-$func-latest.zip
 
