@@ -20,7 +20,7 @@ def init_router(flaskApp):
     @flaskApp.route('/xdl/changeStatus/<string:id>', methods=['PUT'])
     def changeXdlStatus(id):
         data = request.get_json(force=True)
-        return XdlBusiness.changeStatus(id= id, status=data["approve"])
+        return XdlBusiness.changeStatus(id= id, status=data["approve"], name=data.get('name'))
 
     @flaskApp.route('/xdl/search', methods=['GET'])
     def searchXdl():

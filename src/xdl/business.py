@@ -12,14 +12,14 @@ class XdlBusiness:
     def add(drugs, filePath):
         try:
             GeneralHelper.checkString(filePath, ResponseCodes.emptyXdlFilePath)
-            GeneralHelper.checkArray(drugs, ResponseCodes.emptyXdlName)
+            GeneralHelper.checkArray(drugs, ResponseCodes.badXdlRequest)
+            acceptedDrugs = []
             for drug in drugs:
-                GeneralHelper.checkString(drug['name'], ResponseCodes.emptyXdlName)
-                GeneralHelper.checkString(drug['xml'], ResponseCodes.emptyXdlXml)
-                GeneralHelper.checkString(drug['text'], ResponseCodes.emptyXdlText)
+                if (GeneralHelper.isValidString(drug['name']) and GeneralHelper.isValidString(drug['xml']) and GeneralHelper.isValidString(drug['text'])):
+                    acceptedDrugs.append(drug)
             dbConnection = Database()
             db = dbConnection.db
-            XdlDataAccess.add(db, filePath, drugs)
+            XdlDataAccess.add(db, filePath, acceptedDrugs)
             return GeneralWrapper.successResult({})
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
@@ -59,7 +59,7 @@ class XdlBusiness:
             return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
-    def changeStatus(id, status):
+    def changeStatus(id, status, name):
         try:
             GeneralHelper.checkString(id, ResponseCodes.xdlNotFound)
             approve = False
@@ -68,8 +68,11 @@ class XdlBusiness:
             dbConnection = Database()
             db = dbConnection.db
             existedXdl = XdlDataAccess.getById(db, id)
-            if not ((approve and existedXdl['status'] == XdlDataAccess.status['approved']) or (not approve and existedXdl['status'] == XdlDataAccess.status['rejected'])):
-                XdlDataAccess.changeStatus(db, existedXdl, approve, None)
+            if (not GeneralHelper.isValidString(name)):
+                name = existedXdl['name']
+            XdlDataAccess.changeStatus(db, existedXdl, approve, name, None)
+            #if not ((approve and existedXdl['status'] == XdlDataAccess.status['approved']) or (not approve and existedXdl['status'] == XdlDataAccess.status['rejected'])):
+            #    XdlDataAccess.changeStatus(db, existedXdl, approve, None)
             return GeneralWrapper.successResult({})
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)

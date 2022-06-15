@@ -3,6 +3,7 @@ class XdlWrapper:
     def __xdlItem(item, method):
         result = {
             "id" : str(item['_id']),
+            "name" : item['name'],
             "filePath" : item['filePath'],
             "createdAt" : str(item['createdAt'].isoformat()),
             "createdBy" : None,
@@ -10,13 +11,8 @@ class XdlWrapper:
             "statusChangedBy" : None, 
         }
         if method == 'list':
-            result['name'] = item['name']
             result['status'] = item['status']
-        elif method == 'search':
-            result['name'] = item['name']
         elif method == 'details':
-            result['allDrugsNames'] = item['allDrugsNames']
-            result['approvedDrugsNames'] = item['approvedDrugsNames']
             result['status'] = item['status']
             result['xml'] = item['xml']
             result['text'] = item['text']
