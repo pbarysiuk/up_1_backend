@@ -7,3 +7,4 @@ def lambda_handler(event, context):
     if event['queryStringParameters']:
         page= event['queryStringParameters'].get('page') 
     return service.query_categories(user_query=unquote(query), page=int(page))
+
