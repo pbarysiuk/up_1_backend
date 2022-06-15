@@ -9,3 +9,4 @@ def lambda_handler(event, context):
     page = int(event['queryStringParameters'].get('page'))
     pageSize = int(event['queryStringParameters'].get('pageSize'))
     return XdlBusiness.search(query=query, pageNumber=page, pageSize=pageSize)
+

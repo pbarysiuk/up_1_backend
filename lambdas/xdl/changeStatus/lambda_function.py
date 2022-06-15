@@ -7,3 +7,4 @@ def lambda_handler(event, context):
     approve = body.get('approve')
     id = event['pathParameters']['proxy']
     return XdlBusiness.changeStatus(id= id, status=approve)  
+
