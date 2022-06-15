@@ -1,0 +1,77 @@
+name: Deploy Lambda function
+
+on:
+  push:
+    branches:
+      - dev
+      - stage
+      - prod
+jobs:
+  changedfiles:
+    name: changedfiles
+    runs-on: ubuntu-latest
+    outputs:
+      layer: ${{ steps.changes.outputs.layer}}
+      lambdas: ${{ steps.changes.outputs.lambdas }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Get changed files
+        id: changes
+        # Set outputs using the command.
+        run: |
+          echo "::set-output name=layer::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "src/*"| xargs)"
+          echo "::set-output name=lambdas::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "lambdas/*" | xargs)"
+  deploylambda:
+    runs-on: ubuntu-latest
+    # require the first job to have ran
+    needs: changedfiles
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Dev environment
+        if: endsWith(github.ref, '/dev')
+        run: |
+          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+      - name: Set up Stage environment
+        if: endsWith(github.ref, '/stage')
+        run: |
+          echo "ENVIRONMENT=stage" >> $GITHUB_ENV
+      - name: Set up Prod environment
+        if: endsWith(github.ref, '/main')
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "us-east-1"
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+    # only run there are changed files
+      - if: ${{needs.changedfiles.outputs.layer}}
+        name: Deploy lambda layer
+        run: ./.github/scripts/build-layer.sh
+        env:
+          FILES: ${{needs.changedfiles.outputs.layer}}
+          COMMITID: ${{ github.sha }}
+          ENV: ${{ env.ENVIRONMENT }}
+
+      - if: ${{needs.changedfiles.outputs.lambdas}}
+        name: Deploy lambda function
+        run: ./.github/scripts/build-lambda.sh
+        env:
+          FILES: ${{needs.changedfiles.outputs.lambdas}}
+          COMMITID: ${{ github.sha }}
+          ENV: ${{ env.ENVIRONMENT }}
