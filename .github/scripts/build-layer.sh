@@ -2,11 +2,10 @@
 
 echo $FILES
 
-mkdir layer
-python -m pip install -r requirements.txt --target layer
-cp -rf src layer/
-cd layer
-zip -r backend-lambda-layer-$COMMITID.zip *
+mkdir python
+python -m pip install -r requirements.txt --target python
+cp -rf src python/
+zip -r backend-lambda-layer-$COMMITID.zip python/
 
 aws s3 cp backend-lambda-layer-$COMMITID.zip s3://prepaire-$ENV-lambda-artifact-us/layers/
 
