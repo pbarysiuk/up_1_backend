@@ -7,3 +7,4 @@ def lambda_handler(event, context):
     drugs = body.get('drugs')
     filePath = body.get('filePath')
     return XdlBusiness.add(drugs = drugs, filePath = filePath)   
+
