@@ -21,6 +21,7 @@ class Database:
 
     def __getConnectionStringFromParameterStore(self):
         ssm = boto3.client('ssm')
-        parameter = ssm.get_parameter(Name='devPrepaireDocumentDB', WithDecryption=True)
+        parameterName = environ.get("PARAM_STORE_MONGODB")
+        parameter = ssm.get_parameter(Name=parameterName, WithDecryption=True)
         return (parameter['Parameter']['Value'])
         
