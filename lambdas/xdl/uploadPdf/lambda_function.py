@@ -19,10 +19,4 @@ def lambda_handler(event, context):
         return GeneralWrapper.successResult(result)
     except Exception as e:
         traceback.print_exc()
-        return GeneralWrapper.generalErrorResult(e)
-        
-
-
-
-
-    
+        return GeneralWrapper.generalErrorResult(e) 

@@ -128,4 +128,3 @@ def query(user_query: str, page: int, category: str):
     except Exception as e:
         traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)
-
