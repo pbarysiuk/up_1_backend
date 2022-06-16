@@ -24,8 +24,14 @@ class GeneralHelper:
             raise BusinessException(errorCode)
     
     @staticmethod
-    def checkString(string, errorCode):
+    def isValidString(string):
         if string is None or type(string) != str or len(string) <= 0:
+            return False
+        return True
+
+    @staticmethod
+    def checkString(string, errorCode):
+        if not GeneralHelper.isValidString(string):
             raise BusinessException(errorCode)
 
     @staticmethod
