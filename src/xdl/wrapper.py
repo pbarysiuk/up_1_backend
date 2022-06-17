@@ -16,6 +16,9 @@ class XdlWrapper:
             result['status'] = item['status']
             result['xml'] = item['xml']
             result['text'] = item['text']
+        elif method == 'search':
+            result['xml'] = item['xml']
+            result['text'] = item['text']
         return result
 
     @staticmethod
