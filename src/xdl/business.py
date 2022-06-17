@@ -71,8 +71,6 @@ class XdlBusiness:
             if (not GeneralHelper.isValidString(name)):
                 name = existedXdl['name']
             XdlDataAccess.changeStatus(db, existedXdl, approve, name, None)
-            #if not ((approve and existedXdl['status'] == XdlDataAccess.status['approved']) or (not approve and existedXdl['status'] == XdlDataAccess.status['rejected'])):
-            #    XdlDataAccess.changeStatus(db, existedXdl, approve, None)
             return GeneralWrapper.successResult({})
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)

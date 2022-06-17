@@ -20,20 +20,17 @@ class XdlDataAccess:
             xml = drugs[i]['xml']
             text = drugs[i]['text']
             name = drugs[i]['name']
-            xdlDetails = {
-                "xml" : xml,
-                "text" : text
-            }
-            insertResult = db.xdl_details.insert_one(xdlDetails)
             xdl = {
-                "detailsId" : insertResult.inserted_id,
                 "name" : name,
+                "nameLower" : name.lower(),
                 "filePath" : filePath,
                 "createdAt" : nowDate,
                 "createdBy" : None,
                 "status" : XdlDataAccess.status["pending"],
                 "statusChangedAt" : None,
-                "statusChangedBy" : None
+                "statusChangedBy" : None,
+                "xml" : xml,
+                "text" : text
             }
             db.xdl.insert_one(xdl)
             i += 1
@@ -63,31 +60,25 @@ class XdlDataAccess:
 
     @staticmethod
     def getDetails(db, id, throwExceptionIfNotFound = True):
-        existedXdl = XdlDataAccess.getById(db, id, throwExceptionIfNotFound)
+        existedXdl = XdlDataAccess.getById(db, id, throwExceptionIfNotFound, True)
         if existedXdl is None:
             return None
-        projection = {
-            "xml" : 1,
-            "text" : 1
-        }
-        result = db.xdl_details.find_one({'_id' : existedXdl['detailsId']}, projection)
-        result ['_id'] =  existedXdl['_id']
-        result ['createdBy'] =  existedXdl['createdBy']
-        result ['status'] = existedXdl['status']
-        result ['statusChangedAt'] = existedXdl['statusChangedAt']
-        result ['statusChangedBy'] = existedXdl['statusChangedBy']
-        result ['createdAt'] =  existedXdl['createdAt']
-        result ['filePath'] =  existedXdl['filePath']
-        result ['name'] =  existedXdl['name']
-        return result
+        return existedXdl
 
     @staticmethod
-    def getById(db, id, throwExceptionIfNotFound = True):
+    def getById(db, id, throwExceptionIfNotFound = True, details = False):
         query = {
             "_id" : GeneralHelper.getObjectId(id),
             'status': { "$ne" : XdlDataAccess.status['deleted'] }
         }
-        existedXdl = db.xdl.find_one(query)
+        projection = {
+            "name" : 1
+        }
+        existedXdl = None
+        if details:
+            existedXdl = db.xdl.find_one(query)
+        else:
+            existedXdl = db.xdl.find_one(query, projection)
         if existedXdl is None and throwExceptionIfNotFound:
             raise BusinessException(ResponseCodes.xdlNotFound)
         return existedXdl
@@ -105,6 +96,7 @@ class XdlDataAccess:
         updatedFields = {
             "$set" : {
                 "name" : drugName,
+                "nameLower" : drugName.lower(),
                 "status" : newStatus,
                 "statusChangedAt" : datetime.now(tz=timezone.utc),
                 "statusChangedBy" : userId
@@ -115,10 +107,7 @@ class XdlDataAccess:
     @staticmethod
     def search(db, criteria, pageNumber, pageSize):
         query = {
-            "name" : {
-                "$regex": criteria,
-                "$options": "i"
-            },
+            "nameLower" : criteria.lower(),
             "status" : XdlDataAccess.status['approved']
         }
         projection = {
@@ -127,7 +116,9 @@ class XdlDataAccess:
             "createdAt" : 1,
             "createdBy" : 1,
             "statusChangedAt" : 1,
-            "statusChangedBy" : 1
+            "statusChangedBy" : 1,
+            "text" : 1,
+            "xml" : 1
         }
         items = db.xdl.find(query, projection).skip(pageNumber * pageSize).limit(pageSize)
         count = db.xdl.count_documents(query)
