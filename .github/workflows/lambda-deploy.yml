@@ -26,6 +26,7 @@ jobs:
         run: |
           echo "::set-output name=layer::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "src/*"| xargs)"
           echo "::set-output name=lambdas::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "lambdas/*" | xargs)"
+          echo "::set-output name=req::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "requirements.txt" | xargs)"
   deploylambda:
     runs-on: ubuntu-latest
     # require the first job to have ran
@@ -60,7 +61,7 @@ jobs:
           python-version: '3.9'
 
     # only run there are changed files
-      - if: ${{needs.changedfiles.outputs.layer}}
+      - if: ${{ needs.changedfiles.outputs.layer || needs.changedfiles.outputs.req }}
         name: Deploy lambda layer
         run: ./.github/scripts/build-layer.sh
         env:
