@@ -37,7 +37,7 @@ jobs:
         if: endsWith(github.ref, '/main')
         run: |
           echo "ENVIRONMENT=PROD" >> $GITHUB_ENV
-         echo "PARAMETERNAME=lambda_last_commit_id_prod" >> $GITHUB_ENV
+          echo "PARAMETERNAME=lambda_last_commit_id_prod" >> $GITHUB_ENV
 
       - name: aws-ssm-to-env
         uses: bomb-on/aws-ssm-to-env@master
