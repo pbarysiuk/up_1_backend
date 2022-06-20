@@ -1,5 +1,5 @@
-pymongo~=4.0.2
-MarkupSafe==1.1.1
-requests==2.22.0
+pymongo~=4.1.1
+MarkupSafe==2.1.1
+requests==2.28.0
 pyjwt
 mysql-connector-python
