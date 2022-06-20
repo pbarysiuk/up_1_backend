@@ -29,3 +29,5 @@ fi
 for lamb in $lambdas; do
 aws lambda update-function-configuration --function-name $lamb --layers $layerArn
 done
+
+aws ssm put-parameter --overwrite --name lambda_last_commit_id_$ENV --value $COMMITID
