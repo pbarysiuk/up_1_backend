@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Dev environment
-        if: endsWith(github.ref, '/test-ci')
+        if: endsWith(github.ref, '/dev')
         run: |
           echo "ENVIRONMENT=DEV" >> $GITHUB_ENV
           echo "PARAMETERNAME=lambda_last_commit_id_dev" >> $GITHUB_ENV
@@ -47,7 +47,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
           ssm_parameter_list: ${{ env.PARAMETERNAME }}
-      
+ 
       - name: Get changed files
         id: changes
         # Set outputs using the command.
