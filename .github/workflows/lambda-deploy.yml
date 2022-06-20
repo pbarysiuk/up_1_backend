@@ -61,7 +61,7 @@ jobs:
           python-version: '3.9'
 
     # only run there are changed files
-      - if: ${{ (needs.changedfiles.outputs.layer) || (needs.changedfiles.outputs.req) }}
+      - if: ${{ needs.changedfiles.outputs.req }}
         name: Deploy lambda layer
         run: ./.github/scripts/build-layer.sh
         env:
