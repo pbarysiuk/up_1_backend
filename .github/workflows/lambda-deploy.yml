@@ -24,17 +24,20 @@ jobs:
       - name: Set up Dev environment
         if: endsWith(github.ref, '/test-ci')
         run: |
-          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "ENVIRONMENT=DEV" >> $GITHUB_ENV
+          echo "PARAMETERNAME=lambda_last_commit_id_dev" >> $GITHUB_ENV
 
       - name: Set up Stage environment
         if: endsWith(github.ref, '/stage')
         run: |
-          echo "ENVIRONMENT=stage" >> $GITHUB_ENV
+          echo "ENVIRONMENT=STAGE" >> $GITHUB_ENV
+          echo "PARAMETERNAME=lambda_last_commit_id_stage" >> $GITHUB_ENV
 
       - name: Set up Prod environment
         if: endsWith(github.ref, '/main')
         run: |
-          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "ENVIRONMENT=PROD" >> $GITHUB_ENV
+         echo "PARAMETERNAME=lambda_last_commit_id_prod" >> $GITHUB_ENV
 
       - name: aws-ssm-to-env
         uses: bomb-on/aws-ssm-to-env@master
@@ -43,15 +46,15 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
-          ssm_parameter_list: "lambda_last_commit_id_${{ env.ENVIRONMENT }}"
+          ssm_parameter_list: "lambda_last_commit_id_${{ env.PARAMETERNAME }}"
       
       - name: Get changed files
         id: changes
         # Set outputs using the command.
         run: |
-          echo "::set-output name=layer::$(git diff --name-only $AWS_SSM_LAMBDA_LAST_COMMIT_ID_$ENV..HEAD | grep "src/*"| xargs)"
-          echo "::set-output name=lambdas::$(git diff --name-only $AWS_SSM_LAMBDA_LAST_COMMIT_ID_$ENV..HEAD | grep "lambdas/*"| xargs)"
-          echo "::set-output name=req::$(git diff --name-only $AWS_SSM_LAMBDA_LAST_COMMIT_ID_$ENV..HEAD | grep "requirements.txt" | xargs)"
+          echo "::set-output name=layer::$(git diff --name-only $AWS_SSM_LAMBDA_LAST_COMMIT_ID_${{ env.ENVIRONMENT }}..HEAD | grep "src/*"| xargs)"
+          echo "::set-output name=lambdas::$(git diff --name-only $AWS_SSM_LAMBDA_LAST_COMMIT_ID_${{ env.ENVIRONMENT }}..HEAD | grep "lambdas/*"| xargs)"
+          echo "::set-output name=req::$(git diff --name-only $AWS_SSM_LAMBDA_LAST_COMMIT_ID_${{ env.ENVIRONMENT }}..HEAD | grep "requirements.txt" | xargs)"
           #echo "::set-output name=layer::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "src/*"| xargs)"
           #echo "::set-output name=lambdas::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "lambdas/*" | xargs)"
           #echo "::set-output name=req::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "requirements.txt" | xargs)"
