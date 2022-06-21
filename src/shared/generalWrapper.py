@@ -5,6 +5,11 @@ from os import environ
 class GeneralWrapper:
     @staticmethod
     def successResult(data):
+        if data is None:
+            data = {
+                'code' : 200,
+                "message" : 'success'
+            }
         if environ.get('LOCAL'):
             return dumps(data, default=vars), 200, {'Content-Type':'application/json'}
         return {
