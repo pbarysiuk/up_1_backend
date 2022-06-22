@@ -9,4 +9,3 @@ def lambda_handler(event, context):
         drug_id= event['queryStringParameters'].get('id')
         props= event['queryStringParameters'].get('props') 
     return service.find(drug_name=drug_name, drug_id=drug_id, props=props)
-

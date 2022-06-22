@@ -6,4 +6,3 @@ def lambda_handler(event, context):
     if event['queryStringParameters']:
         page= event['queryStringParameters'].get('page') 
     return service.drugbank_drugs_by_category(category_id, page=int(page))
-
