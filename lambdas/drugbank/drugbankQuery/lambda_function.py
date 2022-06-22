@@ -1,11 +1,9 @@
 from urllib.parse import unquote
 from src.drugbank import service
+from src.shared.lambdaHelper import LambdaHelper
 
 def lambda_handler(event, context):
-    query = event['pathParameters']['proxy']
-    page= None
-    category= None
-    if event['queryStringParameters']:
-        page= event['queryStringParameters'].get('page') 
-        category= event['queryStringParameters'].get('category')
-    return service.query(user_query=unquote(query), page=int(page), category=category)
+    query = LambdaHelper.getPathParam(event, 'proxy')
+    page= LambdaHelper.getQueryStringParam(event, 'page', LambdaHelper.valueTypeInt, 0)
+    category= LambdaHelper.getQueryStringParam(event, 'category', LambdaHelper.valueTypeString, None)
+    return service.query(user_query=unquote(query), page=page, category=category)

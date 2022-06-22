@@ -7,10 +7,12 @@ from src.shared.generalWrapper import GeneralWrapper
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 import traceback
+from src.shared.lambdaHelper import LambdaHelper
+
 
 def lambda_handler(event, context):
     try:
-        filePath = event['pathParameters']['proxy']
+        filePath = LambdaHelper.getPathParam(event, 'proxy')
         url = create_presigned_url(bucket_name =  environ.get("BUCKET_NAME"),object_name = filePath)
         if url is None:
             raise BusinessException(ResponseCodes.fileNotFound)

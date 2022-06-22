@@ -107,7 +107,9 @@ class XdlDataAccess:
     @staticmethod
     def search(db, criteria, pageNumber, pageSize):
         query = {
-            "nameLower" : criteria.lower(),
+            "nameLower" : {
+                "$regex": criteria.lower(),
+            } ,
             "status" : XdlDataAccess.status['approved']
         }
         projection = {

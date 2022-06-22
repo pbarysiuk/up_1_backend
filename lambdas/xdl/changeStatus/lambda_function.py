@@ -1,10 +1,7 @@
-from urllib.parse import unquote
 from src.xdl.business import XdlBusiness
-from json import loads
+from src.shared.lambdaHelper import LambdaHelper
 
 def lambda_handler(event, context):
-    body = loads(event['body'])
-    approve = body.get('approve')
-    name = body.get('name')
-    id = event['pathParameters']['proxy']
-    return XdlBusiness.changeStatus(id= id, status=approve, name=name)  
+    id = LambdaHelper.getPathParam(event, 'proxy')
+    body = LambdaHelper.getBodyParams(event, ['approve', 'name'])
+    return XdlBusiness.changeStatus(id= id, status=body['approve'], name=body['name'])  

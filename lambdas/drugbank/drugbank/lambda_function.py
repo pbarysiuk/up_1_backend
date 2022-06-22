@@ -1,11 +1,8 @@
 from src.drugbank import service
+from src.shared.lambdaHelper import LambdaHelper
 
 def lambda_handler(event, context):
-    drug_name= None
-    drug_id= None
-    props= None
-    if event['queryStringParameters']:
-        drug_name= event['queryStringParameters'].get('name') 
-        drug_id= event['queryStringParameters'].get('id')
-        props= event['queryStringParameters'].get('props') 
+    drug_name= LambdaHelper.getQueryStringParam(event, 'name', LambdaHelper.valueTypeString, None)
+    drug_id= LambdaHelper.getQueryStringParam(event, 'id', LambdaHelper.valueTypeString, None)
+    props= LambdaHelper.getQueryStringParam(event, 'props', LambdaHelper.valueTypeString, None)
     return service.find(drug_name=drug_name, drug_id=drug_id, props=props)

@@ -1,13 +1,11 @@
 from urllib.parse import unquote
 from src.xdl.business import XdlBusiness
+from src.shared.lambdaHelper import LambdaHelper
 
-#/natural_products/query/{query}
 def lambda_handler(event, context):
-    query = event['queryStringParameters'].get('query')
-    if query is None:
-        query = ''
+    query = LambdaHelper.getQueryStringParam(event, 'query', LambdaHelper.valueTypeString, '')
     query = unquote(query)
-    page = int(event['queryStringParameters'].get('page'))
-    pageSize = int(event['queryStringParameters'].get('pageSize'))
+    page = LambdaHelper.getQueryStringParam(event, 'page', LambdaHelper.valueTypeInt, 0)
+    pageSize = LambdaHelper.getQueryStringParam(event, 'pageSize', LambdaHelper.valueTypeInt, 10)
     return XdlBusiness.getList(query=query, pageNumber=page, pageSize=pageSize)
 

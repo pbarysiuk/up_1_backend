@@ -10,51 +10,68 @@ import traceback
 import mysql.connector
 import numpy as np
 
+from json import loads
 
+class LambdaHelper:
+
+    valueTypeString = 'string'
+    valueTypeInt = 'int'
+    valueTypeFloat = 'float'
+    
+    @staticmethod
+    def __getValue(event, parentKey, key, type, defaultValue):
+        if event.get(parentKey) is None:
+            return defaultValue
+        value = event[parentKey].get(key)
+        if value is None:
+            return defaultValue
+        if type == LambdaHelper.valueTypeFloat:
+            return float(value)
+        elif type == LambdaHelper.valueTypeInt:
+            return int(value)
+        return value
+
+    @staticmethod
+    def getQueryStringParam(event, key, type = 'string', defaultValue = None):
+        return LambdaHelper.__getValue(event, 'queryStringParameters', key, type, defaultValue)
+    
+    @staticmethod 
+    def getPathParam(event, key, type = 'string'):
+        return LambdaHelper.__getValue(event, 'pathParameters', key, type, None)
+
+    @staticmethod
+    def getBodyParams(event, keys):
+        if event.get('body') is None:
+            result = {}
+            for key in keys:
+                result[key] = None
+            return result
+        body = loads(event['body'])
+        result = {}
+        for key in keys:
+            result[key] = body.get(key)
+        return result
+
+        
+        
 def lambda_handler(event, context):
-    action = event['pathParameters']['proxy']
-    E0 = event['queryStringParameters'].get('E0')
-    if E0 is not None:
-        E0 = float(E0)
-    alpha12_slider_value = event['queryStringParameters'].get('alpha12_slider_value')
-    if alpha12_slider_value is not None:
-        alpha12_slider_value = float(alpha12_slider_value)
-    alpha21_slider_value = event['queryStringParameters'].get('alpha21_slider_value')
-    if alpha21_slider_value is not None:
-        alpha21_slider_value = float(alpha21_slider_value)
-    gamma12_slider_value = event['queryStringParameters'].get('gamma12_slider_value')
-    if gamma12_slider_value is not None:
-        gamma12_slider_value = float(gamma12_slider_value)
-    gamma21_slider_value = event['queryStringParameters'].get('gamma21_slider_value')
-    if gamma21_slider_value is not None:
-        gamma21_slider_value = float(gamma21_slider_value)
-    beta_slider_value = event['queryStringParameters'].get('beta_slider_value')
-    if beta_slider_value is not None:
-        beta_slider_value = float(beta_slider_value)
-    E1_slider_value = event['queryStringParameters'].get('E1_slider_value')
-    if E1_slider_value is not None:
-        E1_slider_value = float(E1_slider_value)
-    E2_slider_value = event['queryStringParameters'].get('E2_slider_value')
-    if E2_slider_value is not None:
-        E2_slider_value = float(E2_slider_value)
-    C1_slider_value = event['queryStringParameters'].get('C1_slider_value')
-    if C1_slider_value is not None:
-        C1_slider_value = float(C1_slider_value)
-    C2_slider_value = event['queryStringParameters'].get('C2_slider_value')
-    if C2_slider_value is not None:
-        C2_slider_value = float(C2_slider_value)
-    h1_slider_value = event['queryStringParameters'].get('h1_slider_value')
-    if h1_slider_value is not None:
-        h1_slider_value = float(h1_slider_value)
-    h2_slider_value = event['queryStringParameters'].get('h2_slider_value')
-    if h2_slider_value is not None:
-        h2_slider_value = float(h2_slider_value)
-    return Synergy.calculatePlot(action=action, E0=E0, alpha12_slider_value=alpha12_slider_value,  alpha21_slider_value=alpha21_slider_value, gamma12_slider_value=gamma12_slider_value,  gamma21_slider_value=gamma21_slider_value, beta_slider_value=beta_slider_value,  E1_slider_value=E1_slider_value,  E2_slider_value=E2_slider_value, C1_slider_value=C1_slider_value,  C2_slider_value=C2_slider_value,h1_slider_value=h1_slider_value, h2_slider_value=h2_slider_value)
+    action = LambdaHelper.getPathParam(event, 'proxy')
+    type = LambdaHelper.getQueryStringParam(event, 'type')
+    E0 = LambdaHelper.getQueryStringParam(event, 'E0', LambdaHelper.valueTypeFloat)
+    alpha12_slider_value = LambdaHelper.getQueryStringParam(event, 'alpha12_slider_value', LambdaHelper.valueTypeFloat)
+    alpha21_slider_value = LambdaHelper.getQueryStringParam(event, 'alpha21_slider_value', LambdaHelper.valueTypeFloat)
+    gamma12_slider_value = LambdaHelper.getQueryStringParam(event, 'gamma12_slider_value', LambdaHelper.valueTypeFloat)
+    gamma21_slider_value = LambdaHelper.getQueryStringParam(event, 'gamma21_slider_value', LambdaHelper.valueTypeFloat)
+    beta_slider_value = LambdaHelper.getQueryStringParam(event, 'beta_slider_value', LambdaHelper.valueTypeFloat) 
+    E1_slider_value = LambdaHelper.getQueryStringParam(event, 'E1_slider_value', LambdaHelper.valueTypeFloat) 
+    E2_slider_value = LambdaHelper.getQueryStringParam(event, 'E2_slider_value', LambdaHelper.valueTypeFloat) 
+    C1_slider_value = LambdaHelper.getQueryStringParam(event, 'C1_slider_value', LambdaHelper.valueTypeFloat) 
+    C2_slider_value = LambdaHelper.getQueryStringParam(event, 'C2_slider_value', LambdaHelper.valueTypeFloat) 
+    h1_slider_value = LambdaHelper.getQueryStringParam(event, 'h1_slider_value', LambdaHelper.valueTypeFloat) 
+    h2_slider_value = LambdaHelper.getQueryStringParam(event, 'h2_slider_value', LambdaHelper.valueTypeFloat) 
+    return Synergy.calculatePlot(action=action, type=type, E0=E0, alpha12_slider_value=alpha12_slider_value,  alpha21_slider_value=alpha21_slider_value, gamma12_slider_value=gamma12_slider_value,  gamma21_slider_value=gamma21_slider_value, beta_slider_value=beta_slider_value,  E1_slider_value=E1_slider_value,  E2_slider_value=E2_slider_value, C1_slider_value=C1_slider_value,  C2_slider_value=C2_slider_value,h1_slider_value=h1_slider_value, h2_slider_value=h2_slider_value)
     
                                           
-
-
-
 
 
 class Synergy:
@@ -111,17 +128,11 @@ class Synergy:
         d2 = np.log10(d2)
         sorted_indices = np.lexsort((d1,d2))
         d1 = d1[sorted_indices]
-        d2 = d2[sorted_indices]
-        E = E[sorted_indices]
-        bs = bs[sorted_indices]
-        ls = ls[sorted_indices]
+        d2 = d2[sorted_indices]   
         n_d1 = len(np.unique(d1))
         n_d2 = len(np.unique(d2))
         d1 = d1.reshape(n_d2,n_d1)
-        d2 = d2.reshape(n_d2,n_d1)
-        E = E.reshape(n_d2,n_d1)
-        bs = bs.reshape(n_d2,n_d1)
-        ls = ls.reshape(n_d2,n_d1)
+        d2 = d2.reshape(n_d2,n_d1) 
         '''
         if clim is None:
             if center_on_zero:
@@ -130,7 +141,20 @@ class Synergy:
                 cmin, cmax = 0,1
         else:
             cmin, cmax = clim
-        '''     
+        '''  
+        z = None
+        if self.type == 'E':
+            E = E[sorted_indices]
+            E = E.reshape(n_d2,n_d1)
+            z = E.tolist()
+        elif self.type == 'ls':
+            ls = ls[sorted_indices]
+            ls = ls.reshape(n_d2,n_d1)
+            z = ls.tolist()
+        elif self.type == 'bs':
+            bs = bs[sorted_indices]
+            bs = bs.reshape(n_d2,n_d1)
+            z = bs.tolist()
         data_to_plot = {
             "alpha12_slider_value" : self.alpha12_slider_value,
             "alpha21_slider_value" : self.alpha21_slider_value,
@@ -143,19 +167,16 @@ class Synergy:
             "C2_slider_value" : self.C2_slider_value,
             "h1_slider_value" : self.h1_slider_value,
             "h2_slider_value" : self.h2_slider_value,
-            'x' : d1.tolist(),
-            'y' : d2.tolist(),
-            'z' : {
-                'E' : E.tolist(),
-                'bs' : bs.tolist(),
-                'ls' : ls.tolist()
-            },
+            #'x' : d1.tolist(),
+            #'y' : d2.tolist(),
+            'z' : z,
             #'cmin' : cmin,
             #'cmax' : cmax
         }
         return data_to_plot
 
-    def __init__(self, action, E0=1, alpha12_slider_value=0.0, alpha21_slider_value=0.0, gamma12_slider_value=0.0, gamma21_slider_value=0.0, beta_slider_value=0.0, E1_slider_value=0.4, E2_slider_value=0.5, C1_slider_value=0.0, C2_slider_value=0.0, h1_slider_value=0.3, h2_slider_value=-0.3):
+    def __init__(self, action, type = 'E', E0=1, alpha12_slider_value=0.0, alpha21_slider_value=0.0, gamma12_slider_value=0.0, gamma21_slider_value=0.0, beta_slider_value=0.0, E1_slider_value=0.4, E2_slider_value=0.5, C1_slider_value=0.0, C2_slider_value=0.0, h1_slider_value=0.3, h2_slider_value=-0.3):
+        self.type = type
         self._E0 = E0
         self.alpha12_slider_value = alpha12_slider_value
         self.alpha21_slider_value = alpha21_slider_value
@@ -227,17 +248,23 @@ class Synergy:
         self.d1 = d1
         self.d2 = d2
         self.E = self._MuSyC_E(self.d1, self.d2, self._E0, self._E1, self._E2, self._E3, self._h1, self._h2, self._C1, self._C2, self._alpha12, self._alpha21, self._gamma12, self._gamma21)
-        self.bs = self._bliss(self.d1, self.d2, self.E, self._E0, self._E1, self._E2, self._h1, self._h2, self._C1, self._C2)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            self.ls = -np.log(self._loewe(self.d1, self.d2, self.E, self._E0, self._E1, self._E2, self._h1, self._h2, self._C1, self._C2))
+        self.bs = None
+        self.ls = None
+        if self.type == 'bs':
+            self.bs = self._bliss(self.d1, self.d2, self.E, self._E0, self._E1, self._E2, self._h1, self._h2, self._C1, self._C2)
+        if self.type == 'ls':
+            with np.errstate(divide='ignore', invalid='ignore'):
+                self.ls = -np.log(self._loewe(self.d1, self.d2, self.E, self._E0, self._E1, self._E2, self._h1, self._h2, self._C1, self._C2))
         self.E[np.isnan(self.E)] = 0
         #self._setup_figs()
         #self._setup_widget()
 
     @staticmethod
-    def calculatePlot(action, E0, alpha12_slider_value, alpha21_slider_value, gamma12_slider_value, gamma21_slider_value, beta_slider_value, E1_slider_value, E2_slider_value, C1_slider_value, C2_slider_value, h1_slider_value, h2_slider_value):
+    def calculatePlot(action, type, E0, alpha12_slider_value, alpha21_slider_value, gamma12_slider_value, gamma21_slider_value, beta_slider_value, E1_slider_value, E2_slider_value, C1_slider_value, C2_slider_value, h1_slider_value, h2_slider_value):
         if E0 is None:
             E0 = 1
+        if type is None:
+            type = 'E'
         if alpha12_slider_value is None:
             alpha12_slider_value = 0.0
         if alpha21_slider_value is None:
@@ -261,11 +288,14 @@ class Synergy:
         if h2_slider_value is None:
             h2_slider_value = -0.3
         try :
-            plot = Synergy(action, E0, alpha12_slider_value, alpha21_slider_value, gamma12_slider_value, gamma21_slider_value, beta_slider_value, E1_slider_value, E2_slider_value, C1_slider_value, C2_slider_value, h1_slider_value, h2_slider_value)
+            plot = Synergy(action, type, E0, alpha12_slider_value, alpha21_slider_value, gamma12_slider_value, gamma21_slider_value, beta_slider_value, E1_slider_value, E2_slider_value, C1_slider_value, C2_slider_value, h1_slider_value, h2_slider_value)
             return GeneralWrapper.successResult(plot.get_plot(plot.d1, plot.d2, plot.E, plot.bs, plot.ls))
         except Exception as e:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
+
+
+
 
 
 

@@ -1,10 +1,7 @@
-from urllib.parse import unquote
 from src.xdl.business import XdlBusiness
-from json import loads
+from src.shared.lambdaHelper import LambdaHelper
 
 def lambda_handler(event, context):
-    body = loads(event['body'])
-    drugs = body.get('drugs')
-    filePath = body.get('filePath')
-    return XdlBusiness.add(drugs = drugs, filePath = filePath)   
+    body = LambdaHelper.getBodyParams(event, ['drugs', 'filePath'])
+    return XdlBusiness.add(drugs = body['drugs'], filePath = body['filePath'])   
 
