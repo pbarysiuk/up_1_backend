@@ -5,3 +5,4 @@ flask_cors
 requests==2.28.0
 pyjwt
 boto3
+numpy

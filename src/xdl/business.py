@@ -20,7 +20,7 @@ class XdlBusiness:
             dbConnection = Database()
             db = dbConnection.db
             XdlDataAccess.add(db, filePath, acceptedDrugs)
-            return GeneralWrapper.successResult({})
+            return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
@@ -71,7 +71,7 @@ class XdlBusiness:
             if (not GeneralHelper.isValidString(name)):
                 name = existedXdl['name']
             XdlDataAccess.changeStatus(db, existedXdl, approve, name, None)
-            return GeneralWrapper.successResult({})
+            return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
