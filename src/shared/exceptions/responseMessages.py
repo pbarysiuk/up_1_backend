@@ -12,7 +12,7 @@ class ResponseMessages:
         ResponseCodes.expiredToken : 'Expired token',
         ResponseCodes.lackOfPrivileges : "You Don't have privilege to do this action",
         ResponseCodes.emptyOrInvalidRole : "Empty or invalid role",
-        ResponseCodes.emptyOrInvalidName : "Empty or invalid role",
+        ResponseCodes.emptyOrInvalidName : "Empty or invalid name",
         ResponseCodes.duplicateEmail : "Duplicated email",
         ResponseCodes.userNotFound : "User not found",
         ResponseCodes.oldPasswordNotMatch : "Old password doesn't match",
@@ -21,5 +21,17 @@ class ResponseMessages:
         ResponseCodes.emptyOrInvalidForgetPasswordRequestId : "Empty or invalid forget password request id",
         ResponseCodes.forgetPasswordRequestNotFound : "Forget password request not found",
         ResponseCodes.emptyOrInvalidForgetPasswordCode : "Empty or invalid forget password code",
-        ResponseCodes.forgetPasswordCodeNotMatch : "Forget password code doesn't match"
+        ResponseCodes.forgetPasswordCodeNotMatch : "Forget password code doesn't match",
+        ResponseCodes.emptyXdlName : "Empty or invalid name",
+        ResponseCodes.emptyXdlUrl : "Empty or invalid url",
+        ResponseCodes.emptyXdlFilePath : "Empty or invalid file path",
+        ResponseCodes.emptyXdlXml : "Empty or invalid xml",
+        ResponseCodes.emptyXdlText : "Empty or invalid synthesis",
+        ResponseCodes.emptyXdlId : "Empty or invalid id",
+        ResponseCodes.emptyXdlSearchQuery : "Empty or invalid search query",
+        ResponseCodes.xdlNotFound : "Xdl not found",
+        ResponseCodes.fileNotFound : "file not found",
+        ResponseCodes.badXdlRequest : "Length of drugs names not equals length of texts or xmls"
+
+
     }

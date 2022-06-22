@@ -1,102 +1,176 @@
 import json
 import os
 import re
-
 from bson.json_util import dumps
+from src.shared.database import Database
+from src.shared.generalWrapper import GeneralWrapper
+import pymongo
+import traceback
 
-from src.ai_models.toxicity.eval import run_inference as run_toxicity
-from src.shared import database
-
-
-def find(drug_name: str, drug_id: str, props: str) -> [dict]:
-    db = database.get_connection()
-
-    props_list = props and props.split(":") or []
-    if not "calculated_properties" in props_list and "toxicity" in props_list:
-        props_list.append("calculated_properties")
-
-    query = get_query(drug_id, drug_name)
-    drug = db.drugs.find_one(query, props_list)
-
-    if drug is None:
-        raise Exception("drug not found")
-
-    get_toxicity(drug, props_list)
-
-    return dumps(drug)
-
-
-def query(user_query: str, page: int, category: str) -> [dict]:
-    db = database.get_connection()
-    columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
-               "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
-    or_query = {
-        '$or': [
-            {
-                "clinical_description": {
-                    "$regex": ".*{}.*".format(user_query),
-                    "$options": "i"
-                }
-            },
-            {
-                "calculated_properties": {
-                    "$regex": ".*{}.*".format(user_query),
-                    "$options": "i"
-                }
-            },
-            {
-                "chemical_properties": {
-                    "$regex": ".*{}.*".format(user_query),
-                    "$options": "i"
-                }
-            },
-            {
-                "name": {
-                    "$regex": ".*{}.*".format(user_query),
-                    "$options": "i"
-                }
-            },
-            {
-                "synonyms": {
-                    "$regex": ".*{}.*".format(user_query),
-                    "$options": "i"
-                }
+def find(drug_name: str, drug_id: str, props: str):
+    try:
+        dbConnection = (Database())
+        db = dbConnection.db
+        props_list = props and props.split(":") or []
+        if not "calculated_properties" in props_list and "toxicity" in props_list:
+            props_list.append("calculated_properties")
+        query = get_query(drug_id, drug_name)
+        drug = db.drugs.find_one(query, props_list)
+        if drug is None:
+            return {
+                "isBase64Encoded": False,
+                "statusCode": 404,
+                "headers": { "Access-Control-Allow-Origin": "*" },
+                "body": dumps({})
             }
-        ]
-    }
+        return GeneralWrapper.successResult(drug)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
 
-    where_query = {
-        "$and": [
-            or_query,
-        ],
-    }
-    if category is not None:
-        where_query["$and"].append({"categories.drugbank_id": category})
 
-    drugs = db.drugs.find(where_query, columns) \
-        .skip(page * 10) \
-        .limit(10)
-    count = db.drugs.count_documents(where_query)
-    return dumps({"count": count, "items": list(drugs)})
+def query(user_query: str, page: int, category: str):
+    try:
+        dbConnection = (Database())
+        db = dbConnection.db
+        molecules =  None
+        if category is None:
+            molecules = db.molecules.find({
+                "name" : {
+                    "$regex": user_query,
+                    "$options": "i"
+                }
+            }, {"name" : 1}).skip(page * 10).limit(10)
+        else:
+            molecules = db.molecules.find({
+                "name" : {
+                    "$regex": user_query,
+                    "$options": "i"
+                }
+            }, {"name" : 1})
+        names = [o['name'] for o in molecules]
+        or_query = {
+            "name" : {
+                "$in" : names
+            } 
+        }
+        columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
+        '''
+        or_query = {
+            '$or': [
+                {
+                    "clinical_description": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "name": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "synonyms.synonym": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                }
+            ]
+        }
+        '''
+        where_query = {
+            "$and": [
+                or_query,
+            ],
+        }
+        hint = None
+        if category is not None:
+            where_query["$and"].append({"categories.drugbank_id": category})
+            hint = [('categories.drugbank_id', pymongo.ASCENDING)]
+        drugs = None
+        if category is not None:
+            drugs = db.drugs.find(where_query, columns, hint = hint).skip(page * 10).limit(10)
+        else:
+            drugs = db.drugs.find(where_query, columns, hint = hint)
+        count = db.drugs.count_documents(where_query)
+        result = {"count": count, "items": list(drugs)}
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+
+
+def moleculeQuery(user_query: str):
+    try:
+        dbConnection = (Database())
+        db = dbConnection.db
+        molecules = db.molecules.find({
+            "name" : {
+                "$regex": user_query,
+                "$options": "i"
+            }
+        }, {"name" : 1}).limit(10)
+        names = [o['name'] for o in molecules]
+        or_query = {
+            "name" : {
+                "$in" : names
+            } 
+        }
+        columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
+        '''
+        or_query = {
+            '$or': [
+                {
+                    "clinical_description": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "name": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                },
+                {
+                    "synonyms.synonym": {
+                        "$regex": user_query,
+                        "$options": "i"
+                    }
+                }
+            ]
+        }
+        '''
+        where_query = {
+            "$and": [
+                or_query,
+            ],
+        }    
+        drugs = db.drugs.find(where_query, columns)
+        count = db.drugs.count_documents(where_query)
+        result = {"count": count, "items": list(drugs)}
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+
 
 
 def get_query(drug_id, drug_name):
     regx = re.compile("^{}".format(drug_name), re.IGNORECASE)
     ret = {}
     if drug_name:
-        ret["name"] = regx
+        ret["name"] = {
+            "$regex": drug_name,
+            "$options": "i"
+        }
     if drug_id:
         ret["drugbank_id"] = drug_id
     return ret
 
-
-def get_toxicity(drug, props_list):
-    if "toxicity" in props_list:
-        smiles = drug["calculated_properties"]["SMILES"]
-        toxicity = run_toxicity([smiles])
-        drug["toxicity"] = dict()
-        for key in toxicity:
-            drug['toxicity'][key] = float(toxicity[key][0])
 
 
 def document(drug_id: str) -> dict:
@@ -109,37 +183,59 @@ def document(drug_id: str) -> dict:
     return data
 
 
-def query_targets(user_query: str) -> [dict]:
-    db = database.get_connection()
-    targets = db.targets.find({
-        "name": {
-            "$regex": ".*{}.*".format(user_query),
-            "$options": "i"
-        }
-    })
-    return dumps(list(targets))
+def query_targets(user_query: str, page = None, pageSize = None):
+    try:
+        if not page:
+            page = 0
+        if not pageSize:
+            pageSize = 100
+        dbConnection = (Database())
+        db = dbConnection.db
+        targets = db.targets.find({
+            "name": {
+                "$regex": user_query,
+                "$options": "i"
+            }
+        }).skip(page * pageSize).limit(pageSize)
+        return GeneralWrapper.successResult(list(targets))
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
 
 
-def query_categories(user_query: str, page: int) -> [dict]:
-    db = database.get_connection()
-    where_query = {
-        "name": {
-            "$regex": ".*{}.*".format(user_query),
-            "$options": "i"
+def query_categories(user_query: str, page: int):
+    try:    
+        dbConnection = (Database())
+        db = dbConnection.db
+        where_query = {
+            "name": {
+                "$regex": user_query,
+                "$options": "i"
+            }
         }
-    }
-    categories = db.categories.find(where_query).skip(page * 10) \
-        .limit(10)
-    count = db.drugs.count_documents(where_query)
-    return dumps({"count": count, "items": list(categories)})
+        categories = db.categories.find(where_query).skip(page * 10) \
+            .limit(10)
+        count = db.categories.count_documents(where_query)
+        result = {"count": count, "items": list(categories)}
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+
 
 
 def drugbank_drugs_by_category(category_id, page):
-    db = database.get_connection()
-    where_query = {
-        "categories.drugbank_id": category_id
-    }
-    drugs = db.drugs.find(where_query).skip(page * 10) \
-        .limit(10)
-    count = db.drugs.count_documents(where_query)
-    return dumps({"count": count, "items": list(drugs)})
+    try:
+        dbConnection = (Database())
+        db = dbConnection.db
+        where_query = {
+            "categories.drugbank_id": category_id
+        }
+        drugs = db.drugs.find(where_query, hint = [('categories.drugbank_id', pymongo.ASCENDING)]).skip(page * 10).limit(10)
+        count = db.drugs.count_documents(where_query, hint = [('categories.drugbank_id', pymongo.ASCENDING)])
+        result = {"count": count, "items": list(drugs)}
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+

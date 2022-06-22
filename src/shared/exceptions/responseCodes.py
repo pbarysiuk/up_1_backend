@@ -15,6 +15,15 @@ class ResponseCodes:
     invalidPageSize = '400-007'
     emptyOrInvalidForgetPasswordRequestId = '400-008'
     emptyOrInvalidForgetPasswordCode = '400-009'
+    emptyXdlName = '400-010'
+    emptyXdlUrl = '400-011'
+    emptyXdlFilePath = '400-012'
+    emptyXdlXml = '400-013'
+    emptyXdlText = '400-014'
+    emptyXdlId = '400-015'
+    emptyXdlSearchQuery = '400-016'
+    badXdlRequest = '400-17'
+
 
 
     #unauthorized 401
@@ -32,6 +41,8 @@ class ResponseCodes:
     #not found 404
     userNotFound = '404-001'
     forgetPasswordRequestNotFound = '404-002'
+    xdlNotFound =  '404-003'
+    fileNotFound = '404-004'
 
     #confolict 409
     duplicateEmail = '409-001'

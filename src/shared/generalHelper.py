@@ -1,7 +1,7 @@
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 import re
-import hashlib
+#import hashlib
 from bson.objectid import ObjectId
 
 class GeneralHelper:
@@ -14,9 +14,9 @@ class GeneralHelper:
             return id
         return ObjectId(id)
 
-    @staticmethod
-    def hash(password):
-        return hashlib.md5(password.encode()).hexdigest()
+    #@staticmethod
+    #def hash(password):
+    #    return hashlib.md5(password.encode()).hexdigest()
 
     @staticmethod
     def checkId(id, errorCode):
@@ -24,8 +24,19 @@ class GeneralHelper:
             raise BusinessException(errorCode)
     
     @staticmethod
-    def checkString(string, errorCode):
+    def isValidString(string):
         if string is None or type(string) != str or len(string) <= 0:
+            return False
+        return True
+
+    @staticmethod
+    def checkString(string, errorCode):
+        if not GeneralHelper.isValidString(string):
+            raise BusinessException(errorCode)
+
+    @staticmethod
+    def checkArray(arr, errorCode):
+        if arr is None or (type(arr) != list) or len(arr) <= 0:
             raise BusinessException(errorCode)
     
     @staticmethod

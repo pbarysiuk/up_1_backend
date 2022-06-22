@@ -7,4 +7,3 @@ def lambda_handler(event, context):
     page= LambdaHelper.getQueryStringParam(event, 'page', LambdaHelper.valueTypeInt, 0)
     category= LambdaHelper.getQueryStringParam(event, 'category', LambdaHelper.valueTypeString, None)
     return service.query(user_query=unquote(query), page=page, category=category)
-

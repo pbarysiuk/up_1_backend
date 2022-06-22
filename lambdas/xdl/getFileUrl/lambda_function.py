@@ -9,6 +9,7 @@ from src.shared.exceptions.responseCodes import ResponseCodes
 import traceback
 from src.shared.lambdaHelper import LambdaHelper
 
+
 def lambda_handler(event, context):
     try:
         filePath = LambdaHelper.getPathParam(event, 'proxy')
