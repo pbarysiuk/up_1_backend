@@ -54,7 +54,7 @@ def query(user_query: str, page: int, category: str):
                 "$in" : names
             } 
         }
-        columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+        columns = ["cid", "drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
                 "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
         '''
         or_query = {
@@ -118,7 +118,7 @@ def moleculeQuery(user_query: str):
                 "$in" : names
             } 
         }
-        columns = ["drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+        columns = ["cid", "drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
                 "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
         '''
         or_query = {
