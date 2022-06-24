@@ -4,6 +4,7 @@ class XdlWrapper:
         result = {
             "id" : str(item['_id']),
             "name" : item['name'],
+            'title' : item.get('title'),
             "filePath" : item['filePath'],
             "createdAt" : str(item['createdAt'].isoformat()),
             "createdBy" : None,

@@ -40,6 +40,7 @@ class XdlDataAccess:
     def getList(db, criteria, pageNumber, pageSize):
         projection = {
             "name" : 1,
+            "title" : 1,
             "filePath" : 1,
             "createdAt" : 1,
             "createdBy" : 1,
@@ -84,7 +85,7 @@ class XdlDataAccess:
         return existedXdl
 
     @staticmethod
-    def changeStatus(db, existedXdl, approve, drugName, userId):
+    def changeStatus(db, existedXdl, approve, drugName, title, userId):
         query = {
             "_id" : existedXdl['_id']
         }
@@ -96,6 +97,7 @@ class XdlDataAccess:
         updatedFields = {
             "$set" : {
                 "name" : drugName,
+                'title' : title,
                 "nameLower" : drugName.lower(),
                 "status" : newStatus,
                 "statusChangedAt" : datetime.now(tz=timezone.utc),
@@ -114,6 +116,7 @@ class XdlDataAccess:
         }
         projection = {
             "name" : 1,
+            "title" : 1,
             "filePath" : 1,
             "createdAt" : 1,
             "createdBy" : 1,

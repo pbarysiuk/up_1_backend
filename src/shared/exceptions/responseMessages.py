@@ -31,7 +31,9 @@ class ResponseMessages:
         ResponseCodes.emptyXdlSearchQuery : "Empty or invalid search query",
         ResponseCodes.xdlNotFound : "Xdl not found",
         ResponseCodes.fileNotFound : "file not found",
-        ResponseCodes.badXdlRequest : "Length of drugs names not equals length of texts or xmls"
+        ResponseCodes.badXdlRequest : "Length of drugs names not equals length of texts or xmls",
+        ResponseCodes.emptyXdlTitle : "Empty xdl title"
+
 
 
     }

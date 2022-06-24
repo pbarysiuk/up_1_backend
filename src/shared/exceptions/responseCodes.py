@@ -23,6 +23,7 @@ class ResponseCodes:
     emptyXdlId = '400-015'
     emptyXdlSearchQuery = '400-016'
     badXdlRequest = '400-17'
+    emptyXdlTitle = '400-18'
 
 
 
