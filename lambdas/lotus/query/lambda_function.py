@@ -72,8 +72,16 @@ def lambda_handler(event, context):
     return Synergy.calculatePlot(action=action, type=type, E0=E0, alpha12_slider_value=alpha12_slider_value,  alpha21_slider_value=alpha21_slider_value, gamma12_slider_value=gamma12_slider_value,  gamma21_slider_value=gamma21_slider_value, beta_slider_value=beta_slider_value,  E1_slider_value=E1_slider_value,  E2_slider_value=E2_slider_value, C1_slider_value=C1_slider_value,  C2_slider_value=C2_slider_value,h1_slider_value=h1_slider_value, h2_slider_value=h2_slider_value)
     
                                           
-
-
+def lambda_handler_(event, context):
+    dbConnection = (Database())
+    db = dbConnection.db
+    #count = db.drugs.count_documents({'calculated_properties.Molecular Formula' : {'$ne' : None}})
+    count = db.drugs.count_documents({'cid' : {'$ne' : None}})
+    print (count)
+    return count
+    
+    
+    
 class Synergy:
     def _get_beta(self, E0, E1, E2, E3):
         minE = min(E1, E2)

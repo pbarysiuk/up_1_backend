@@ -59,9 +59,10 @@ class XdlBusiness:
             return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
-    def changeStatus(id, status, name):
+    def changeStatus(id, status, name, title):
         try:
             GeneralHelper.checkString(id, ResponseCodes.xdlNotFound)
+            GeneralHelper.checkString(title, ResponseCodes.emptyXdlTitle)
             approve = False
             if status == 1 or status == '1' or status == True:
                 approve = True
@@ -70,7 +71,7 @@ class XdlBusiness:
             existedXdl = XdlDataAccess.getById(db, id)
             if (not GeneralHelper.isValidString(name)):
                 name = existedXdl['name']
-            XdlDataAccess.changeStatus(db, existedXdl, approve, name, None)
+            XdlDataAccess.changeStatus(db, existedXdl, approve, name, title, None)
             return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
