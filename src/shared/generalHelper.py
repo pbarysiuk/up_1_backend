@@ -1,8 +1,9 @@
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 import re
-#import hashlib
 from bson.objectid import ObjectId
+import uuid
+from random import randint
 
 class GeneralHelper:
     
@@ -13,10 +14,6 @@ class GeneralHelper:
         if type(id) == ObjectId:
             return id
         return ObjectId(id)
-
-    #@staticmethod
-    #def hash(password):
-    #    return hashlib.md5(password.encode()).hexdigest()
 
     @staticmethod
     def checkId(id, errorCode):
@@ -69,4 +66,12 @@ class GeneralHelper:
         if code >= '409-000' and code <= '409-999':
             return 409
         return 200
+
+    @staticmethod
+    def generateGUID():
+        return str(uuid.uuid4())
+
+    @staticmethod
+    def generateCode():
+        return str(randint(100000, 999999))
 

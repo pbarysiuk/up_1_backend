@@ -32,7 +32,16 @@ class ResponseMessages:
         ResponseCodes.xdlNotFound : "Xdl not found",
         ResponseCodes.fileNotFound : "file not found",
         ResponseCodes.badXdlRequest : "Length of drugs names not equals length of texts or xmls",
-        ResponseCodes.emptyXdlTitle : "Empty xdl title"
+        ResponseCodes.emptyXdlTitle : "Empty xdl title",
+        ResponseCodes.emptyVerificationCode : "Empty verification code",
+        ResponseCodes.verificationCodeNotMatch : "Verification code not match",
+        ResponseCodes.notVerifiedUser : "User not verified",
+        ResponseCodes.alreadyVerifiedUser : "User already verified",
+
+        
+        
+        
+        
 
 
 

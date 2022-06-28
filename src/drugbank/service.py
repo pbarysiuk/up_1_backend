@@ -188,7 +188,7 @@ def query_targets(user_query: str, page = None, pageSize = None):
         if not page:
             page = 0
         if not pageSize:
-            pageSize = 100
+            pageSize = 25
         dbConnection = (Database())
         db = dbConnection.db
         targets = db.targets.find({

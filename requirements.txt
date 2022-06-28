@@ -1,6 +1,7 @@
 pymongo~=4.1.1
 MarkupSafe==2.1.1
 requests==2.28.0
-pyjwt
+pyjwt[crypto]
 mysql-connector-python
 numpy
+argon2-cffi

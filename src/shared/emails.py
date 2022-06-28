@@ -1,19 +1,21 @@
 from os import environ
 import boto3
 from botocore.exceptions import ClientError
+from src.shared.lambdaHelper import LambdaHelper
 
 class Email:
     @staticmethod
     def __sendEmail(toEmails, title, content):
-        sender = environ.get('EMAIL_SENDER')
-        awsRegion=environ.get('EMAIL_AWS_REGION')
+        sender = LambdaHelper.getValueFromParameterStore(envKey='PS_EMAIL_SENDER', defaultEnvKey='EMAIL_SENDER')
+        #awsRegion=environ.get('EMAIL_AWS_REGION')
         charset = "utf-8"
-        awsCred = {
-            "aws_access_key_id":environ.get('AWS_ACCESS_KEY'),
-            "aws_secret_access_key":environ.get('AWS_SECRET_KEY') 
-        }
-        client = boto3.client('ses',**awsCred, region_name=awsRegion)
+        #awsCred = {
+        #    "aws_access_key_id":environ.get('AWS_ACCESS_KEY'),
+        #    "aws_secret_access_key":environ.get('AWS_SECRET_KEY') 
+        #}
+        #client = boto3.client('ses',**awsCred, region_name=awsRegion)
         try:
+            client = boto3.client('ses')
             response = client.send_email(
                 Destination={
                     "ToAddresses": toEmails,
@@ -32,11 +34,15 @@ class Email:
                 },
                 Source=sender,
             )
+        #except NoRegionError as e:
+        #    print(e.response['Error']['Message'])
         except ClientError as e:
             print(e.response['Error']['Message'])
-        else:
-            print("Email sent! Message ID:"),
-            print(response['MessageId'])
+        except Exception as e:
+            print(e)
+        #else:
+        #    print("Email sent! Message ID:"),
+        #    print(response['MessageId'])
         return
 
 
@@ -44,6 +50,12 @@ class Email:
     def sendForgetPasswordEmail(toEmail, forgetPasswordCode):
         title = "Prepaire forget password"
         content = "Your forget password code is: " + str(forgetPasswordCode)
+        return Email.__sendEmail([toEmail], title, content)
+
+    @staticmethod
+    def sendVerificationEmail(toEmail, verificationCode):
+        title = "Prepaire verification email"
+        content = "Your verification code is: " + str(verificationCode)
         return Email.__sendEmail([toEmail], title, content)
 
     @staticmethod

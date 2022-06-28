@@ -24,6 +24,7 @@ class ResponseCodes:
     emptyXdlSearchQuery = '400-016'
     badXdlRequest = '400-17'
     emptyXdlTitle = '400-18'
+    emptyVerificationCode = '400-19'
 
 
 
@@ -32,10 +33,12 @@ class ResponseCodes:
     wrongEmailOrPassword = '401-002'
     oldPasswordNotMatch = '401-003' 
     forgetPasswordCodeNotMatch = '401-004'
+    verificationCodeNotMatch = '401-005'
 
     #forbidden 403
     expiredToken = '403-001'
     lackOfPrivileges = '403-002'
+    notVerifiedUser = '403-003'
 
    
     
@@ -47,4 +50,5 @@ class ResponseCodes:
 
     #confolict 409
     duplicateEmail = '409-001'
+    alreadyVerifiedUser = '409-002'
     
