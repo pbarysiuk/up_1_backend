@@ -2,7 +2,7 @@ from flask import  request
 from urllib.parse import unquote
 from src.threeDimPlot.synergy import Synergy
 
-def init_router(flaskApp):
+def initService(flaskApp):
     @flaskApp.route('/3d/<string:action>', methods=['get'])
     def getThreeD(action):
         args = request.args

@@ -1,20 +1,26 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from routers import drug_bank_router
-from routers import natural_products_router
-from routers import xdl_router
-from routers import threeD_router
+from routers import drugBankRouter
+from routers import naturalProductsRouter
+from routers import xdlRouter
+from routers import threeDRouter
+from routers import userManagmentRouter
+from routers import authRouter
+from routers import profileRouter
 
 app = Flask(__name__)
 CORS(app)
 
 
 
-drug_bank_router.init_router(app)
-natural_products_router.init_router(app)
-xdl_router.init_router(app)
-threeD_router.init_router(app)
+drugBankRouter.initService(app)
+naturalProductsRouter.initService(app)
+xdlRouter.initService(app)
+threeDRouter.initService(app)
+userManagmentRouter.initService(app)
+authRouter.initService(app)
+profileRouter.initService(app)
 
 
 if __name__ == '__main__':

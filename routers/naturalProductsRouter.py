@@ -6,7 +6,7 @@ from importers import naturalProductsImporter
 from src.natural_products import service
 
 
-def init_router(app):
+def initService(app):
     @app.route('/natural_products/query/<string:query>')
     def natural_products_query(query):
         return service.query(query=unquote(query),page=int(request.args.get('page')))

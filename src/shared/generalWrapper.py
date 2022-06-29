@@ -22,6 +22,7 @@ class GeneralWrapper:
     @staticmethod
     def generalErrorResult(e):
         result = {
+            'code' : 500,
             "message" : "An error occured",
             "exceptionMessage" : str(e)
         }

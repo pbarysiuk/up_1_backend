@@ -2,7 +2,7 @@ from flask import  request
 from urllib.parse import unquote
 from src.xdl.business import XdlBusiness
 
-def init_router(flaskApp):
+def initService(flaskApp):
     @flaskApp.route('/xdl/add', methods=['POST'])
     def addXdl():
         data = request.get_json(force=True)

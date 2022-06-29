@@ -1,10 +1,26 @@
 from json import loads
+import boto3
+from os import environ
 
 class LambdaHelper:
 
     valueTypeString = 'string'
     valueTypeInt = 'int'
     valueTypeFloat = 'float'
+
+    @staticmethod
+    def getValueFromParameterStore(envKey, defaultEnvKey):
+        result = None
+        try:
+            ssm = boto3.client('ssm')
+            parameterName = environ.get(envKey)
+            parameter = ssm.get_parameter(Name=parameterName, WithDecryption=True)
+            return (parameter['Parameter']['Value'])
+        except Exception as e:
+            result = None
+        if result is None:
+            result = environ.get(defaultEnvKey)
+        return result
     
     @staticmethod
     def __getValue(event, parentKey, key, type, defaultValue):
