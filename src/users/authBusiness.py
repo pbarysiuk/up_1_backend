@@ -1,11 +1,9 @@
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
-from src.shared.exceptions.responseMessages import ResponseMessages
 from src.shared.generalHelper import GeneralHelper
 from src.shared.generalWrapper import GeneralWrapper
 from src.shared.jwt import Jwt
 import traceback
-from datetime import timezone,datetime
 from src.shared.emails import Email
 from src.shared.database import Database
 from src.users.dataAccess import UsersDataAccess
@@ -68,7 +66,7 @@ class BusinessAuth:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
+            return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
     def verify(email, code, password):
@@ -96,9 +94,8 @@ class BusinessAuth:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
-
-    '''
+            return GeneralWrapper.generalErrorResult(e)
+    
     @staticmethod
     def forgetPasswordFirstStep(email):
         try:
@@ -106,32 +103,16 @@ class BusinessAuth:
             GeneralHelper.checkEmailFormat(email)
             dbConnection = (Database())
             db = dbConnection.db
-            query = {
-                "email" : email,
-                "deleted_at" : None
-            }
-            existedUser = db.users.find_one(query)
-            if existedUser is None:
-                raise BusinessException(ResponseCodes.userNotFound)
-            forgetPasswordCode = str(randint(100000, 999999))
-            forgetPasswordRequest = {
-                "user_id" : existedUser['_id'],
-                "email" : existedUser['email'],
-                "code" : forgetPasswordCode,
-                "created_at" : datetime.now(tz=timezone.utc),
-                "deleted_at" : None
-            }
-            insertResult = db.forget_password_requests.insert_one(forgetPasswordRequest)
+            existedUser = UsersDataAccess.getByEmail(db, email)
+            forgetPasswordCode = GeneralHelper.generateCode()
+            insertResult = UsersDataAccess.addForgetPasswordRequest(db, existedUser['_id'], existedUser['email'], forgetPasswordCode)
             Email.sendForgetPasswordEmail(email, forgetPasswordCode)
-            result = {
-                "request_forget_password_id" : str(insertResult.inserted_id)
-            }
-            return GeneralWrapper.successResult(result)
+            return GeneralWrapper.successResult(UsersWrapper.forgetPasswordResult(insertResult.inserted_id))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
+            return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
     def resendForgetPasswordCode(requestId):
@@ -140,23 +121,14 @@ class BusinessAuth:
             id = GeneralHelper.getObjectId(requestId)
             dbConnection = (Database())
             db = dbConnection.db
-            query = {
-                "_id" : id,
-                "deleted_at" : None
-            }
-            existedRequest = db.forget_password_requests.find_one(query)
-            if existedRequest is None:
-                raise BusinessException(ResponseCodes.forgetPasswordRequestNotFound)
-            BusinessAuth.__sendVerificationEmail(existedRequest["email"], existedRequest["code"])
-            result = {
-                "request_forget_password_id" : requestId
-            }
-            return GeneralWrapper.successResult(result)
+            existedRequest = UsersDataAccess.getForgetPaswordRequest(db, id)
+            Email.sendForgetPasswordEmail(existedRequest['email'], existedRequest['code'])
+            return GeneralWrapper.successResult(UsersWrapper.forgetPasswordResult(existedRequest['_id']))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
+            return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
     def forgetPasswordSecondStep(requestId, code, password):
@@ -167,23 +139,18 @@ class BusinessAuth:
             id = GeneralHelper.getObjectId(requestId)
             dbConnection = (Database())
             db = dbConnection.db
-            query = {
-                "_id" : id,
-                "deleted_at" : None
-            }
-            existedRequest = db.forget_password_requests.find_one(query)
-            if existedRequest is None:
-                raise BusinessException(ResponseCodes.forgetPasswordRequestNotFound)
+            existedRequest = UsersDataAccess.getForgetPaswordRequest(db, id)
             if existedRequest['code'] != code:
                 raise BusinessException(ResponseCodes.forgetPasswordCodeNotMatch)
-            db.forget_password_requests.update_one(query, {"$set": {"deleted_at" : datetime.now(tz=timezone.utc)}})
-            db.users.update_one({"_id" : existedRequest['user_id']}, {"$set": {"password" : GeneralHelper.hash(password)}})
+            existedUser = UsersDataAccess.getById(db, existedRequest['userId'])
+            if existedUser['verifiedAt'] is None:
+                UsersDataAccess.updatePassword(db, existedRequest['userId'],  PasswordHelper.hash(password), True)
+            else:
+                UsersDataAccess.updatePassword(db, existedRequest['userId'],  PasswordHelper.hash(password))
+            UsersDataAccess.deleteForgetPasswordRequest(db, existedRequest['_id'])
             return BusinessAuth.login(existedRequest['email'], password)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
-
-
-    '''
+            return GeneralWrapper.generalErrorResult(e)

@@ -7,6 +7,7 @@ from routers import xdl_router
 from routers import threeD_router
 from routers import userManagmentRouter
 from routers import auth_router
+from routers import profileRouter
 
 app = Flask(__name__)
 CORS(app)
@@ -19,7 +20,7 @@ xdl_router.init_router(app)
 threeD_router.init_router(app)
 userManagmentRouter.initService(app)
 auth_router.initService(app)
-
+profileRouter.initService(app)
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001)
 

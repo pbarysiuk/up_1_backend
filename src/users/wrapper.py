@@ -38,3 +38,10 @@ class UsersWrapper:
             items.append(UsersWrapper.__user(item = item, method='list'))
         return {"count" : count, "items" : items}
 
+    @staticmethod
+    def forgetPasswordResult(insertedId):
+        result = {
+            "forgetPasswordRequestId" : str(insertedId)
+        }
+        return result
+

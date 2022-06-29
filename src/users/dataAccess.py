@@ -159,3 +159,45 @@ class UsersDataAccess:
         items = db.users.find(query, projection).skip(pageNumber * pageSize).limit(pageSize)
         count = db.users.count_documents(query)
         return count, items
+
+    @staticmethod
+    def addForgetPasswordRequest(db, userId, userEmail, code):
+        forgetPasswordRequest = {
+            "userId" : userId,
+            "email" : userEmail,
+            "code" : code,
+            "createdAt" : datetime.now(tz=timezone.utc),
+            "deletedAt" : None
+        }
+        return db.forget_password_requests.insert_one(forgetPasswordRequest)
+
+    @staticmethod
+    def getForgetPaswordRequest(db, id):
+        query = {
+            "_id" : id,
+            "deletedAt" : None
+        }
+        existedRequest = db.forget_password_requests.find_one(query)
+        if existedRequest is None:
+            raise BusinessException(ResponseCodes.forgetPasswordRequestNotFound)
+        return existedRequest
+
+    @staticmethod
+    def deleteForgetPasswordRequest(db, id):
+        db.forget_password_requests.update_one({'_id' : id}, {"$set": {"deletedAt" : datetime.now(tz=timezone.utc)}})
+
+    @staticmethod
+    def updatePassword(db, id, password, verify = False):
+        query = {
+            '_id' : id,
+            'deletedAt' : None
+        }
+        updatedFields = {
+            'password' : password
+        }
+        if verify:
+            updatedFields['verifiedAt'] = datetime.now(tz=timezone.utc)
+        db.users.update_one(query, {"$set": updatedFields})
+
+
+    

@@ -1,5 +1,14 @@
 
-'''
+from src.shared.exceptions.businessException import BusinessException
+from src.shared.exceptions.responseCodes import ResponseCodes
+from src.shared.generalHelper import GeneralHelper
+from src.shared.generalWrapper import GeneralWrapper
+from src.shared.jwt import Jwt
+import traceback
+from src.shared.database import Database
+from src.users.dataAccess import UsersDataAccess
+from src.shared.passwordHelper import PasswordHelper
+from src.users.wrapper import UsersWrapper
 
 
 class ProfileBusiness:
@@ -12,17 +21,15 @@ class ProfileBusiness:
             dbConnection = (Database())
             db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
-            existedUser = BusinessUsers.__getById(db, userId, includePassword=True)
-            if GeneralHelper.hash(oldPassword) != existedUser["password"]:
-                raise BusinessException(ResponseCodes.oldPasswordNotMatch)
-            db.users.update_one({"_id" : userId}, {"$set": {"password" : GeneralHelper.hash(newPassword)}})
-            existedUser = BusinessUsers.__getById(db, userId)
-            return GeneralWrapper.successResult(existedUser)
+            existedUser = UsersDataAccess.getById(db, userId, includePassword=True)
+            PasswordHelper.checkPassword(existedUser["password"], oldPassword, ResponseCodes.oldPasswordNotMatch)
+            UsersDataAccess.updatePassword(db, existedUser['_id'], PasswordHelper.hash(newPassword))
+            return GeneralWrapper.successResult(UsersWrapper.profileResult(existedUser))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
+            return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
     def getProfile(token):
@@ -31,16 +38,16 @@ class ProfileBusiness:
             dbConnection = (Database())
             db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
-            existedUser = BusinessUsers.__getById(db, userId)
-            return GeneralWrapper.successResult(existedUser)
+            existedUser = UsersDataAccess.getById(db, userId)
+            return GeneralWrapper.successResult(UsersWrapper.profileResult(existedUser))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
+            return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
-    def updateProfile(token, email, name):
+    def updateProfile(token, email, name, image):
         try:
             payload = Jwt.checkAccessToken(token=token)
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
@@ -49,20 +56,13 @@ class ProfileBusiness:
             dbConnection = (Database())
             db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
-            existedUser = BusinessUsers.__getById(db, userId, includePassword=False)
-            BusinessUsers.__checkUniqueEmail(db, email, userId)
-            setQuery={
-                "name" : name,
-                "email" : email,
-                "updated_at" : datetime.now(tz=timezone.utc)
-            }
-            db.users.update_one({"_id" : userId}, {"$set": setQuery})
-            existedUser = BusinessUsers.__getById(db, userId)
-            return GeneralWrapper.successResult(existedUser)
+            existedUser = UsersDataAccess.getById(db, userId)
+            UsersDataAccess.checkUniqueEmail(db, email, userId)
+            UsersDataAccess.update(db, userId, name, email, existedUser['role'], image)
+            existedUser = UsersDataAccess.getById(db, userId)
+            return GeneralWrapper.successResult(UsersWrapper.profileResult(existedUser))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
-            return GeneralWrapper.errorResult(ResponseCodes.generalError, ResponseMessages.english[ResponseCodes.generalError])
-
-'''
+            return GeneralWrapper.generalErrorResult(e)

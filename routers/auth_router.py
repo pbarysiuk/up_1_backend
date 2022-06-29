@@ -22,7 +22,7 @@ def initService(flaskApp):
         data = request.get_json(force=True)
         return BusinessAuth.verify(email= data["email"], code=data["code"], password=data["password"])
     
-    '''
+    
     @flaskApp.route('/auth/forgetPasswordFirstStep', methods=['POST'])
     def forgetPasswordFirstStep():
         data = request.get_json(force=True)
@@ -31,11 +31,11 @@ def initService(flaskApp):
     @flaskApp.route('/auth/resendForgetPasswordCode', methods=['POST'])
     def resendForgetPasswordCode():
         data = request.get_json(force=True)
-        return BusinessAuth.resendForgetPasswordCode(requestId = data["request_forget_password_id"])
+        return BusinessAuth.resendForgetPasswordCode(requestId = data["forgetPasswordRequestId"])
 
     @flaskApp.route('/auth/forgetPasswordSecondStep', methods=['POST'])
     def forgetPasswordSecondStep():
         data = request.get_json(force=True)
-        return BusinessAuth.forgetPasswordSecondStep(requestId = data["request_forget_password_id"], code=data["code"], password=data["password"])
-    '''
+        return BusinessAuth.forgetPasswordSecondStep(requestId = data["forgetPasswordRequestId"], code=data["code"], password=data["password"])
+    
     
