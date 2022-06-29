@@ -6,7 +6,7 @@ from importers import drugbankImporter, value_calculator
 from src.drugbank import service
 
 
-def init_router(app):
+def initService(app):
     @app.route('/drugbank')
     def drugbank():
         return service.find(drug_name=request.args.get('name'),
