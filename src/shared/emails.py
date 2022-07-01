@@ -1,9 +1,13 @@
 from os import environ
-import boto3
-from botocore.exceptions import ClientError
-from src.shared.lambdaHelper import LambdaHelper
+#import boto3
+#from botocore.exceptions import ClientError
+#from src.shared.lambdaHelper import LambdaHelper
+import smtplib
+from email.message import EmailMessage
+import traceback
 
 class Email:
+    '''
     @staticmethod
     def __sendEmail(toEmails, title, content):
         sender = LambdaHelper.getValueFromParameterStore(envKey='PS_EMAIL_SENDER', defaultEnvKey='EMAIL_SENDER')
@@ -44,6 +48,23 @@ class Email:
         #    print("Email sent! Message ID:"),
         #    print(response['MessageId'])
         return
+    '''
+
+    @staticmethod
+    def __sendEmail(toEmails, title, content):
+        try:
+            msg = EmailMessage()
+            msg['Subject'] = title
+            msg['From'] = environ.get('MAIL_USER')
+            msg['To'] = ', '.join(toEmails)
+            msg.set_content(content)
+            server = smtplib.SMTP(environ.get('MAIL_HOST'), environ.get('MAIL_PORT'))
+            server.starttls()
+            server.login(environ.get('MAIL_USER'), environ.get('MAIL_PASS'))  # user & password
+            server.send_message(msg)
+            server.quit()
+        except Exception as e:
+            traceback.print_exc(e)
 
 
     @staticmethod

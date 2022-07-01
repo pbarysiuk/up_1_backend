@@ -9,3 +9,6 @@ lotus_db
 venv
 __pycache__/
 .vscode/
+test.py
+test1.py
+test2.py
