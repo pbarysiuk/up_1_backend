@@ -1,8 +1,9 @@
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 import re
-import hashlib
 from bson.objectid import ObjectId
+import uuid
+from random import randint
 
 class GeneralHelper:
     
@@ -15,17 +16,24 @@ class GeneralHelper:
         return ObjectId(id)
 
     @staticmethod
-    def hash(password):
-        return hashlib.md5(password.encode()).hexdigest()
-
-    @staticmethod
     def checkId(id, errorCode):
         if id is None or type(id) != int or id <= 0:
             raise BusinessException(errorCode)
     
     @staticmethod
-    def checkString(string, errorCode):
+    def isValidString(string):
         if string is None or type(string) != str or len(string) <= 0:
+            return False
+        return True
+
+    @staticmethod
+    def checkString(string, errorCode):
+        if not GeneralHelper.isValidString(string):
+            raise BusinessException(errorCode)
+
+    @staticmethod
+    def checkArray(arr, errorCode):
+        if arr is None or (type(arr) != list) or len(arr) <= 0:
             raise BusinessException(errorCode)
     
     @staticmethod
@@ -58,4 +66,12 @@ class GeneralHelper:
         if code >= '409-000' and code <= '409-999':
             return 409
         return 200
+
+    @staticmethod
+    def generateGUID():
+        return str(uuid.uuid4())
+
+    @staticmethod
+    def generateCode():
+        return str(randint(100000, 999999))
 
