@@ -9,6 +9,7 @@ from src.shared.database import Database
 from src.users.dataAccess import UsersDataAccess
 from src.shared.passwordHelper import PasswordHelper
 from src.users.wrapper import UsersWrapper
+import asyncio
 
 class BusinessAuth:
     @staticmethod
@@ -26,8 +27,9 @@ class BusinessAuth:
             if existedUser['verifiedAt'] is None:
                 Email.sendVerificationEmail(existedUser['email'], existedUser['verificationCode'])
                 raise BusinessException(ResponseCodes.notVerifiedUser)    
-            accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
-            refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            #accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            #refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            accessToken, refreshToken = asyncio.run(BusinessAuth.__generateAccessRefreshTokens(str(existedUser['_id']), existedUser['role']))
             return GeneralWrapper.successResult(UsersWrapper.loginResult(existedUser, accessToken, refreshToken))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
@@ -154,3 +156,9 @@ class BusinessAuth:
         except Exception as e:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
+
+    @staticmethod
+    async def __generateAccessRefreshTokens(strUserId, role):
+        allReturns = await asyncio.gather(Jwt.generateAccessTokenAsync(strUserId, role), Jwt.generateRefreshTokenAsync(strUserId, role))
+        return allReturns[0], allReturns[1]
+
