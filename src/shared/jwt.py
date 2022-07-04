@@ -47,6 +47,10 @@ class Jwt:
         return Jwt.__generateToken(payload=payload, secret=secret)
 
     @staticmethod
+    async def generateAccessTokenAsync(userId, role):
+        return Jwt.generateAccessToken(userId, role)
+
+    @staticmethod
     def checkAccessToken(token, allowedRoles = []):
         secret = LambdaHelper.getValueFromParameterStore(envKey='PS_ACCESS_TOKEN_PUBLIC', defaultEnvKey='ACCESS_TOKEN_PUBLIC')
         payload = Jwt.__checkToken(token, secret=secret)
@@ -61,6 +65,10 @@ class Jwt:
         payload = Jwt.__generatePayload(userId=userId, role=role, duration=Jwt.__refreshTokenDuration)
         secret = LambdaHelper.getValueFromParameterStore(envKey='PS_REFRESH_TOKEN_PRIVATE', defaultEnvKey='REFRESH_TOKEN_PRIVATE')
         return Jwt.__generateToken(payload=payload, secret=secret)
+
+    @staticmethod
+    async def generateRefreshTokenAsync(userId, role):
+        return Jwt.generateRefreshToken(userId, role)
 
     @staticmethod
     def checkRefreshTokenAndGenerateNewAccessToken(token):
