@@ -27,9 +27,9 @@ class BusinessAuth:
             if existedUser['verifiedAt'] is None:
                 Email.sendVerificationEmail(existedUser['email'], existedUser['verificationCode'])
                 raise BusinessException(ResponseCodes.notVerifiedUser)    
-            #accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
-            #refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
-            accessToken, refreshToken = asyncio.run(BusinessAuth.__generateAccessRefreshTokens(str(existedUser['_id']), existedUser['role']))
+            accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            #accessToken, refreshToken = asyncio.run(BusinessAuth.__generateAccessRefreshTokens(str(existedUser['_id']), existedUser['role']))
             return GeneralWrapper.successResult(UsersWrapper.loginResult(existedUser, accessToken, refreshToken))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
