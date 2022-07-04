@@ -5,9 +5,10 @@ from src.shared.generalHelper import GeneralHelper
 from src.shared.exceptions.businessException import BusinessException
 from src.shared.exceptions.responseCodes import ResponseCodes
 from src.shared.lambdaHelper import LambdaHelper
+import traceback
 
 class Jwt:
-    __algorithm="RS256"
+    __algorithm="EdDSA"
     __accessTokenDuration=30 #access token is valid for 30 min
     __refreshTokenDuration=43200 #refresh token is valid for a month
 
@@ -17,13 +18,16 @@ class Jwt:
     
     @staticmethod
     def __generateToken(payload, secret):
-        return jwt.encode(payload, secret.encode('utf-8'), algorithm=Jwt.__algorithm)
+        usedSecret = '-----BEGIN PRIVATE KEY-----\n' + secret + '\n-----END PRIVATE KEY-----\n'
+        return jwt.encode(payload, usedSecret, algorithm=Jwt.__algorithm)
 
     @staticmethod
     def __checkToken(token, secret):
         try:
-            return jwt.decode(token, secret.encode('utf-8'), algorithms=Jwt.__algorithm)
+            usedSecret = '-----BEGIN PUBLIC KEY-----\n' + secret + '\n-----END PUBLIC KEY-----\n'
+            return jwt.decode(token, usedSecret, algorithms=Jwt.__algorithm)
         except Exception as e:
+            traceback.print_exc(e)
             raise BusinessException(ResponseCodes.invalidToken)
 
     @staticmethod

@@ -1,10 +1,11 @@
-from os import environ
-#import boto3
+from os import  environ
+import boto3
 #from botocore.exceptions import ClientError
 #from src.shared.lambdaHelper import LambdaHelper
 import smtplib
 from email.message import EmailMessage
 import traceback
+from threading import Thread
 
 class Email:
     '''
@@ -49,9 +50,9 @@ class Email:
         #    print(response['MessageId'])
         return
     '''
-
+    
     @staticmethod
-    def __sendEmail(toEmails, title, content):
+    def sendEmailSMTP(toEmails, title, content):
         try:
             msg = EmailMessage()
             msg['Subject'] = title
@@ -68,10 +69,47 @@ class Email:
 
 
     @staticmethod
+    def __sendEmailSQS(toEmails, title, content):
+        sqs = boto3.client('sqs')
+        queue_url = environ.get('MAIL_SQS_URL')
+        # Send message to SQS queue
+        for e in toEmails:
+            response = sqs.send_message(
+                QueueUrl=queue_url,
+                DelaySeconds=0,
+                MessageAttributes={
+                    'toEmail': {
+                        'DataType': 'String',
+                        'StringValue': e
+                    },
+                    'title': {
+                        'DataType': 'String',
+                        'StringValue': title
+                    }
+                },
+                MessageBody=(
+                    content
+                )
+            )
+
+
+    @staticmethod
+    def __sendEmail(toEmails, title, content):
+        try:
+            if environ.get('LOCAL'):
+                Thread(target=Email.sendEmailSMTP, args=[toEmails, title, content]).start()
+            else:
+                Email.__sendEmailSQS(toEmails, title, content)
+        except Exception as e:
+            traceback.print_exc(e)
+
+
+    @staticmethod
     def sendForgetPasswordEmail(toEmail, forgetPasswordCode):
         title = "Prepaire forget password"
         content = "Your forget password code is: " + str(forgetPasswordCode)
         return Email.__sendEmail([toEmail], title, content)
+ 
 
     @staticmethod
     def sendVerificationEmail(toEmail, verificationCode):
