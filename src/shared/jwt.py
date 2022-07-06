@@ -9,8 +9,9 @@ import traceback
 
 class Jwt:
     __algorithm="EdDSA"
-    __accessTokenDuration=30 #access token is valid for 30 min
+    __accessTokenDuration=10 #access token is valid for 30 min
     __refreshTokenDuration=43200 #refresh token is valid for a month
+    __firstTimeResetPasswordTokenDuration=30
 
     userRole = "user"
     adminRole = "admin"
@@ -47,10 +48,6 @@ class Jwt:
         return Jwt.__generateToken(payload=payload, secret=secret)
 
     @staticmethod
-    async def generateAccessTokenAsync(userId, role):
-        return Jwt.generateAccessToken(userId, role)
-
-    @staticmethod
     def checkAccessToken(token, allowedRoles = []):
         secret = LambdaHelper.getValueFromParameterStore(envKey='PS_ACCESS_TOKEN_PUBLIC', defaultEnvKey='ACCESS_TOKEN_PUBLIC')
         payload = Jwt.__checkToken(token, secret=secret)
@@ -66,9 +63,6 @@ class Jwt:
         secret = LambdaHelper.getValueFromParameterStore(envKey='PS_REFRESH_TOKEN_PRIVATE', defaultEnvKey='REFRESH_TOKEN_PRIVATE')
         return Jwt.__generateToken(payload=payload, secret=secret)
 
-    @staticmethod
-    async def generateRefreshTokenAsync(userId, role):
-        return Jwt.generateRefreshToken(userId, role)
 
     @staticmethod
     def checkRefreshTokenAndGenerateNewAccessToken(token):
@@ -77,6 +71,21 @@ class Jwt:
         if payload["expire"] < int(datetime.now(tz=timezone.utc).timestamp()):
             raise BusinessException(ResponseCodes.expiredToken)
         return Jwt.generateAccessToken(payload["id"], payload["role"])
+
+
+    @staticmethod
+    def generateFirstTimeResetPasswordToken(userId):
+        payload = Jwt.__generatePayload(userId=userId, role='', duration=Jwt.__firstTimeResetPasswordTokenDuration)
+        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_RESET_PASS_TOKEN_PRIVATE', defaultEnvKey='RESET_PASS_TOKEN_PRIVATE')
+        return Jwt.__generateToken(payload=payload, secret=secret)
+
+    @staticmethod
+    def checkFirstTimeResetPasswordToken(token):
+        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_RESET_PASS_TOKEN_PUBLIC', defaultEnvKey='RESET_PASS_TOKEN_PUBLIC')
+        payload = Jwt.__checkToken(token, secret=secret)
+        if payload["expire"] < int(datetime.now(tz=timezone.utc).timestamp()) :
+            raise BusinessException(ResponseCodes.expiredToken)
+        return payload
 
 
 

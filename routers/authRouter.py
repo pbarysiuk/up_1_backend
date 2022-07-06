@@ -7,6 +7,12 @@ def initService(flaskApp):
         data = request.get_json(force=True)
         return BusinessAuth.login(email=data["email"], password=data["password"])
 
+    @flaskApp.route('/auth/resetPasswordFirstTime', methods=['PUT'])
+    def resetPasswordFirstTime():
+        data = request.get_json(force=True)
+        headers = request.headers
+        return BusinessAuth.resetPasswordFirstTime(resetPasswordToken= headers['auth'], password=data["password"])
+
     @flaskApp.route('/auth/refreshToken', methods=['POST'])
     def refreshToken():
         headers = request.headers

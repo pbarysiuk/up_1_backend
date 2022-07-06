@@ -9,7 +9,6 @@ from src.shared.database import Database
 from src.users.dataAccess import UsersDataAccess
 from src.shared.passwordHelper import PasswordHelper
 from src.users.wrapper import UsersWrapper
-import asyncio
 
 class BusinessAuth:
     @staticmethod
@@ -24,18 +23,41 @@ class BusinessAuth:
             if existedUser is None:
                 raise BusinessException(ResponseCodes.wrongEmailOrPassword) 
             PasswordHelper.checkPassword(existedUser['password'], password, ResponseCodes.wrongEmailOrPassword)
-            if existedUser['verifiedAt'] is None:
-                Email.sendVerificationEmail(existedUser['email'], existedUser['verificationCode'])
-                raise BusinessException(ResponseCodes.notVerifiedUser)    
+            if existedUser['lastChangePassword'] is None:
+                firstTimeResetPasswordToken = Jwt.generateFirstTimeResetPasswordToken(userId=str(existedUser['_id']))
+                result = {
+                    "firstTimeResetPasswordToken" : firstTimeResetPasswordToken
+                }
+                return GeneralWrapper.successResult(result)   
             accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
             refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
-            #accessToken, refreshToken = asyncio.run(BusinessAuth.__generateAccessRefreshTokens(str(existedUser['_id']), existedUser['role']))
             return GeneralWrapper.successResult(UsersWrapper.loginResult(existedUser, accessToken, refreshToken))
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
+
+    @staticmethod
+    def resetPasswordFirstTime(resetPasswordToken, password):
+        try:
+            GeneralHelper.checkString(resetPasswordToken, ResponseCodes.invalidToken)
+            GeneralHelper.checkString(password, ResponseCodes.emptyOrInvalidPassword)
+            payload = Jwt.checkFirstTimeResetPasswordToken(token=resetPasswordToken)
+            userId = GeneralHelper.getObjectId(payload["id"])
+            dbConnection = (Database())
+            db = dbConnection.db
+            existedUser = UsersDataAccess.getById(db, userId)
+            if not (existedUser['lastChangePassword'] is None):
+                raise BusinessException(ResponseCodes.alreadyResettedPasswordFirstTime)
+            UsersDataAccess.updatePassword(db, existedUser['_id'], PasswordHelper.hash(password))    
+            return GeneralWrapper.successResult(None)
+        except BusinessException as e:
+            return GeneralWrapper.errorResult(e.code, e.message)
+        except Exception as e:
+            traceback.print_exc()
+            return GeneralWrapper.generalErrorResult(e)
+        
 
     @staticmethod
     def refreshToken(refreshToken):
@@ -150,15 +172,10 @@ class BusinessAuth:
             else:
                 UsersDataAccess.updatePassword(db, existedRequest['userId'],  PasswordHelper.hash(password))
             UsersDataAccess.deleteForgetPasswordRequest(db, existedRequest['_id'])
-            return BusinessAuth.login(existedRequest['email'], password)
+            return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
-
-    @staticmethod
-    async def __generateAccessRefreshTokens(strUserId, role):
-        allReturns = await asyncio.gather(Jwt.generateAccessTokenAsync(strUserId, role), Jwt.generateRefreshTokenAsync(strUserId, role))
-        return allReturns[0], allReturns[1]
 

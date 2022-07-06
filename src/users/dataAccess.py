@@ -6,9 +6,9 @@ from src.shared.generalHelper import GeneralHelper
 class UsersDataAccess:
     @staticmethod
     def insertUser(db, name, email, password, role, image, verificationCode, isVerified = False):
-        verifiedAt = None
+        lastChangePassword = None
         if isVerified:
-            verifiedAt = datetime.now(tz=timezone.utc)
+            lastChangePassword = datetime.now(tz=timezone.utc)
         user = {
             "name" : name,
             "email" : email,
@@ -16,10 +16,11 @@ class UsersDataAccess:
             "role" : role,
             "image" : image,
             "verificationCode" : verificationCode,
-            "verifiedAt" : verifiedAt,
+            "verifiedAt" :  datetime.now(tz=timezone.utc),
             "createdAt" : datetime.now(tz=timezone.utc),
             "updatedAt" : None,
-            "deletedAt" : None
+            "deletedAt" : None,
+            "lastChangePassword" : lastChangePassword
         }
         return db.users.insert_one(user)
 
@@ -49,7 +50,8 @@ class UsersDataAccess:
             "image" : 1,
             "verifiedAt" : 1,
             "verificationCode" : 1,
-            "createdAt" : 1
+            "createdAt" : 1,
+            "lastChangePassword" : 1
         }
         if includePassword:
             projection["password"] = 1
@@ -73,7 +75,8 @@ class UsersDataAccess:
             "image" : 1,
             "verifiedAt" : 1,
             "verificationCode" : 1,
-            "createdAt" : 1
+            "createdAt" : 1,
+            "lastChangePassword" : 1
         }
         if includePassword:
             projection["password"] = 1
@@ -187,16 +190,15 @@ class UsersDataAccess:
         db.forget_password_requests.update_one({'_id' : id}, {"$set": {"deletedAt" : datetime.now(tz=timezone.utc)}})
 
     @staticmethod
-    def updatePassword(db, id, password, verify = False):
+    def updatePassword(db, id, password):
         query = {
             '_id' : id,
             'deletedAt' : None
         }
         updatedFields = {
-            'password' : password
+            'password' : password,
+            'lastChangePassword' : datetime.now(tz=timezone.utc)
         }
-        if verify:
-            updatedFields['verifiedAt'] = datetime.now(tz=timezone.utc)
         db.users.update_one(query, {"$set": updatedFields})
 
 
