@@ -44,12 +44,12 @@ class Jwt:
     @staticmethod
     def generateAccessToken(userId, role):
         payload = Jwt.__generatePayload(userId=userId, role=role, duration=Jwt.__accessTokenDuration)
-        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_ACCESS_TOKEN_PRIVATE', defaultEnvKey='ACCESS_TOKEN_PRIVATE')
+        secret = environ.get('ACCESS_TOKEN_PRIVATE')
         return Jwt.__generateToken(payload=payload, secret=secret)
 
     @staticmethod
     def checkAccessToken(token, allowedRoles = []):
-        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_ACCESS_TOKEN_PUBLIC', defaultEnvKey='ACCESS_TOKEN_PUBLIC')
+        secret = environ.get('ACCESS_TOKEN_PUBLIC')
         payload = Jwt.__checkToken(token, secret=secret)
         if payload["expire"] < int(datetime.now(tz=timezone.utc).timestamp()) :
             raise BusinessException(ResponseCodes.expiredToken)
@@ -60,13 +60,13 @@ class Jwt:
     @staticmethod
     def generateRefreshToken(userId, role):
         payload = Jwt.__generatePayload(userId=userId, role=role, duration=Jwt.__refreshTokenDuration)
-        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_REFRESH_TOKEN_PRIVATE', defaultEnvKey='REFRESH_TOKEN_PRIVATE')
+        secret = environ.get('REFRESH_TOKEN_PRIVATE')
         return Jwt.__generateToken(payload=payload, secret=secret)
 
 
     @staticmethod
     def checkRefreshTokenAndGenerateNewAccessToken(token):
-        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_REFRESH_TOKEN_PUBLIC', defaultEnvKey='REFRESH_TOKEN_PUBLIC')
+        secret = environ.get('REFRESH_TOKEN_PUBLIC')
         payload = Jwt.__checkToken(token, secret=secret)
         if payload["expire"] < int(datetime.now(tz=timezone.utc).timestamp()):
             raise BusinessException(ResponseCodes.expiredToken)
@@ -76,12 +76,12 @@ class Jwt:
     @staticmethod
     def generateFirstTimeResetPasswordToken(userId):
         payload = Jwt.__generatePayload(userId=userId, role='', duration=Jwt.__firstTimeResetPasswordTokenDuration)
-        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_RESET_PASS_TOKEN_PRIVATE', defaultEnvKey='RESET_PASS_TOKEN_PRIVATE')
+        secret = environ.get('RESET_PASS_TOKEN_PRIVATE')
         return Jwt.__generateToken(payload=payload, secret=secret)
 
     @staticmethod
     def checkFirstTimeResetPasswordToken(token):
-        secret = LambdaHelper.getValueFromParameterStore(envKey='PS_RESET_PASS_TOKEN_PUBLIC', defaultEnvKey='RESET_PASS_TOKEN_PUBLIC')
+        secret = environ.get('RESET_PASS_TOKEN_PUBLIC')
         payload = Jwt.__checkToken(token, secret=secret)
         if payload["expire"] < int(datetime.now(tz=timezone.utc).timestamp()) :
             raise BusinessException(ResponseCodes.expiredToken)
