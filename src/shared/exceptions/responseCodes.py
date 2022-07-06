@@ -51,4 +51,5 @@ class ResponseCodes:
     #confolict 409
     duplicateEmail = '409-001'
     alreadyVerifiedUser = '409-002'
+    alreadyResettedPasswordFirstTime = '409-003'
     

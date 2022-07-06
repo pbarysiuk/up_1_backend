@@ -37,7 +37,7 @@ class ResponseMessages:
         ResponseCodes.verificationCodeNotMatch : "Verification code not match",
         ResponseCodes.notVerifiedUser : "User not verified",
         ResponseCodes.alreadyVerifiedUser : "User already verified",
-
+        ResponseCodes.alreadyResettedPasswordFirstTime : "User already reseted password"
         
         
         
