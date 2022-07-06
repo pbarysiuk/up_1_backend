@@ -17,6 +17,8 @@ class BusinessAuth:
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
             GeneralHelper.checkString(password, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkEmailFormat(email)
+
+            
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getByEmail(db, email, False, True)
