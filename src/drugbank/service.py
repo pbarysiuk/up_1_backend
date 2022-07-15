@@ -56,7 +56,7 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
         genders = ['male', 'female']
         #if not (gender.lower() in genders):
         #    gender =genders[0]
-        if gender == genders[1]:
+        if gender.lower() == genders[1]:
             maintenanceDose = maintenanceDose - (maintenanceDose* 0.08)
         #print ("md after gender: " + str(maintenanceDose))
 
