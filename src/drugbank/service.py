@@ -51,7 +51,7 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
 
         if weight <= 0:
             weight = 1.0 
-        maintenanceDose = (clearance[selectedIndex] * dose[selectedIndex] / volumeOfDistribution[selectedIndex]) * weight
+        maintenanceDose = (clearance[selectedIndex] * dose[selectedIndex] / volumeOfDistribution[selectedIndex]) 
         genders = ['male', 'female']
         #if not (gender.lower() in genders):
         #    gender =genders[0]
