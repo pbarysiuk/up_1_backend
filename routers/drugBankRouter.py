@@ -50,4 +50,9 @@ def initService(app):
     @app.route('/drugbank/import/categories')
     def categories_import():
         return drugbankImporter.categories()
+    
+    @app.route('/drugbank/calculateMaintenanceDosage', methods=['POST'])
+    def calculateMaintenanceDosage():
+        data = request.get_json(force=True)
+        return service.calculateMaintenanceDosage(data.get('drug'), data.get('weight'), data.get('age'), data.get('gender'), data.get('geo'))
 
