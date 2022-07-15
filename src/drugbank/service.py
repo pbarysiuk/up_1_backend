@@ -16,7 +16,7 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
         volumeOfDistributionG1 = [15, 3, 2.46, 45.1, 5.2, 3]
         volumeOfDistributionG2 = [17, 3.2, 2.7, 62.3, 5.8, 3.3]
         volumeOfDistributionG3 = [20, 3.5, 3.2, 73.4, 6.3, 3.5]
-        dose = [200, 100, 100, 100, 500, 10]
+        dose = [600, 600, 100, 200, 10, 1]
         drugs = ["favipiravir", "balicatib", "ritonavir", "remdesivir", "cephalexin", "ivermectin"]
         selectedIndex = 0
         currentIndex = 0
@@ -29,9 +29,9 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
         if selectedIndex == 4:
             if age <= 5:
                 selectedGroup = 'g1'
-            elif age > 5 and age <= 12:
+            elif age > 5 and age <= 15:
                 selectedGroup = 'g2'
-            elif age > 12:
+            elif age > 15:
                 selectedGroup = 'g3'
         else:
             if age < 30:
@@ -51,13 +51,15 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
 
         if weight <= 0:
             weight = 1.0 
-        maintenanceDose = (clearance[selectedIndex] * dose[selectedIndex] / volumeOfDistribution[selectedIndex]) 
+        maintenanceDose = (clearance[selectedIndex] * dose[selectedIndex]) / (volumeOfDistribution[selectedIndex] * weight) 
+        print ("md: " + str(maintenanceDose))
         genders = ['male', 'female']
         #if not (gender.lower() in genders):
         #    gender =genders[0]
         if gender == genders[1]:
             maintenanceDose = maintenanceDose - (maintenanceDose* 0.08)
-        
+        print ("md after gender: " + str(maintenanceDose))
+
         if geo.lower() == 'europe':
             maintenanceDose = maintenanceDose + (maintenanceDose* 0.01)
         elif geo.lower() == 'africa':
@@ -66,6 +68,9 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
             maintenanceDose = maintenanceDose + (maintenanceDose* 0.03)
         elif geo.lower() == 'america':
             maintenanceDose = maintenanceDose + (maintenanceDose* 0.02)
+        print ("md after geo: " + str(maintenanceDose))
+
+
         result = {
             "maintenanceDosage" : maintenanceDose
         }  
