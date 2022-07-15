@@ -36,7 +36,7 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
         else:
             if age < 30:
                 selectedGroup = 'g1'
-            elif age >= 31 and age < 60:
+            elif age >= 31 and age <= 60:
                 selectedGroup = 'g2'
             elif age >= 61:
                 selectedGroup = 'g3'
