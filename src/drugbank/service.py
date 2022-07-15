@@ -52,13 +52,13 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
         if weight <= 0:
             weight = 1.0 
         maintenanceDose = (clearance[selectedIndex] * dose[selectedIndex]) / (volumeOfDistribution[selectedIndex] * weight) 
-        print ("md: " + str(maintenanceDose))
+        #print ("md: " + str(maintenanceDose))
         genders = ['male', 'female']
         #if not (gender.lower() in genders):
         #    gender =genders[0]
         if gender == genders[1]:
             maintenanceDose = maintenanceDose - (maintenanceDose* 0.08)
-        print ("md after gender: " + str(maintenanceDose))
+        #print ("md after gender: " + str(maintenanceDose))
 
         if geo.lower() == 'europe':
             maintenanceDose = maintenanceDose + (maintenanceDose* 0.01)
@@ -68,7 +68,7 @@ def calculateMaintenanceDosage(drug, weight, age, gender, geo):
             maintenanceDose = maintenanceDose + (maintenanceDose* 0.03)
         elif geo.lower() == 'america':
             maintenanceDose = maintenanceDose + (maintenanceDose* 0.02)
-        print ("md after geo: " + str(maintenanceDose))
+        #print ("md after geo: " + str(maintenanceDose))
 
 
         result = {
