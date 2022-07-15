@@ -7,6 +7,73 @@ from src.shared.generalWrapper import GeneralWrapper
 import pymongo
 import traceback
 
+
+def calculateMaintenanceDosage(drug, weight, age, gender, geo):
+    try:
+        clearanceG1 = [6.72, 0.45, 10, 1.8, 22.56, 18]
+        clearanceG2 = [6.23, 0.40, 9, 1.2, 20.24, 16]
+        clearanceG3 = [5.4, 0.3, 7.8, 0.9, 18.38, 14.8]
+        volumeOfDistributionG1 = [15, 3, 2.46, 45.1, 5.2, 3]
+        volumeOfDistributionG2 = [17, 3.2, 2.7, 62.3, 5.8, 3.3]
+        volumeOfDistributionG3 = [20, 3.5, 3.2, 73.4, 6.3, 3.5]
+        dose = [200, 100, 100, 100, 500, 10]
+        drugs = ["favipiravir", "balicatib", "ritonavir", "remdesivir", "cephalexin", "ivermectin"]
+        selectedIndex = 0
+        currentIndex = 0
+        for d in drugs:
+            if d == drug.lower():
+                selectedIndex = currentIndex
+                break
+            currentIndex += 1
+        selectedGroup = 'g1'
+        if selectedIndex == 4:
+            if age <= 5:
+                selectedGroup = 'g1'
+            elif age > 5 and age <= 12:
+                selectedGroup = 'g2'
+            elif age > 12:
+                selectedGroup = 'g3'
+        else:
+            if age < 30:
+                selectedGroup = 'g1'
+            elif age >= 31 and age < 60:
+                selectedGroup = 'g2'
+            elif age >= 61:
+                selectedGroup = 'g3'
+        clearance = clearanceG1
+        volumeOfDistribution = volumeOfDistributionG1
+        if selectedGroup == 'g2':
+            clearance = clearanceG2
+            volumeOfDistribution = volumeOfDistributionG2
+        elif selectedGroup == 'g3':
+            clearance = clearanceG3
+            volumeOfDistribution = volumeOfDistributionG3
+
+        if weight <= 0:
+            weight = 1.0 
+        maintenanceDose = (clearance[selectedIndex] * dose[selectedIndex] / volumeOfDistribution[selectedIndex]) * weight
+        genders = ['male', 'female']
+        #if not (gender.lower() in genders):
+        #    gender =genders[0]
+        if gender == genders[1]:
+            maintenanceDose = maintenanceDose - (maintenanceDose* 0.08)
+        
+        if geo.lower() == 'europe':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.01)
+        elif geo.lower() == 'africa':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.07)
+        elif geo.lower() == 'australia':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.03)
+        elif geo.lower() == 'america':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.02)
+        result = {
+            "maintenanceDosage" : maintenanceDose
+        }  
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+
 def find(drug_name: str, drug_id: str, props: str):
     try:
         dbConnection = (Database())
