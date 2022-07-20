@@ -141,3 +141,15 @@ class UsersDataAccess:
             return None
         return existedUser
 
+    @staticmethod
+    def updatePassword(db, id, password):
+        query = {
+            '_id' : id,
+            'deletedAt' : None
+        }
+        updatedFields = {
+            'password' : password,
+            'lastChangePassword' : datetime.now(tz=timezone.utc)
+        }
+        db.users.update_one(query, {"$set": updatedFields})
+
