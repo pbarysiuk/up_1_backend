@@ -10,6 +10,190 @@ import traceback
 
 def calculateMaintenanceDosage(drug, weight, age, gender, geo):
     try:
+        allDrugs = {
+            "favipiravir" : {
+                'dose' : 600,
+                "groups" : [
+                    {
+                        'gt' : -10000000,
+                        'lwe' : 30,
+                        'clearance' : 6.72,
+                        'volumeOfDistribution' : 15
+                    },
+                    {
+                        'gt' : 30,
+                        'lwe' : 60,
+                        'clearance' : 6.23,
+                        'volumeOfDistribution' : 17
+                    },
+                    {
+                        'gt' : 60,
+                        'lwe' : 1000000,
+                        'clearance' : 5.4,
+                        'volumeOfDistribution' : 20
+                    },
+                ]
+            },
+            "balicatib" : {
+                'dose' : 600,
+                "groups" : [
+                    {
+                        'gt' : -10000000,
+                        'lwe' : 30,
+                        'clearance' : 0.45,
+                        'volumeOfDistribution' : 3
+                    },
+                    {
+                        'gt' : 30,
+                        'lwe' : 60,
+                        'clearance' : 0.4,
+                        'volumeOfDistribution' : 3.2
+                    },
+                    {
+                        'gt' : 60,
+                        'lwe' : 1000000,
+                        'clearance' : 0.3,
+                        'volumeOfDistribution' : 3.5
+                    },
+                ]
+            },
+            "ritonavir" : {
+                'dose' : 100,
+                "groups" : [
+                    {
+                        'gt' : -10000000,
+                        'lwe' : 30,
+                        'clearance' : 10,
+                        'volumeOfDistribution' : 2.46
+                    },
+                    {
+                        'gt' : 30,
+                        'lwe' : 60,
+                        'clearance' : 9,
+                        'volumeOfDistribution' : 2.7
+                    },
+                    {
+                        'gt' : 60,
+                        'lwe' : 1000000,
+                        'clearance' : 7.8,
+                        'volumeOfDistribution' : 3.2
+                    },
+                ]
+            },
+            "remdesivir" : {
+                'dose' : 200,
+                "groups" : [
+                    {
+                        'gt' : -10000000,
+                        'lwe' : 30,
+                        'clearance' : 1.8,
+                        'volumeOfDistribution' : 45.1
+                    },
+                    {
+                        'gt' : 30,
+                        'lwe' : 60,
+                        'clearance' : 1.2,
+                        'volumeOfDistribution' : 62.3
+                    },
+                    {
+                        'gt' : 60,
+                        'lwe' : 1000000,
+                        'clearance' : 0.9,
+                        'volumeOfDistribution' : 73.4
+                    },
+                ]
+            },
+            "cephalexin" : {
+                'dose' : 10,
+                "groups" : [
+                    {
+                        'gt' : -10000000,
+                        'lwe' : 5,
+                        'clearance' : 22.56,
+                        'volumeOfDistribution' : 5.2
+                    },
+                    {
+                        'gt' : 5,
+                        'lwe' : 15,
+                        'clearance' : 20.24,
+                        'volumeOfDistribution' : 5.8
+                    },
+                    {
+                        'gt' : 15,
+                        'lwe' : 1000000,
+                        'clearance' : 18.38,
+                        'volumeOfDistribution' : 6.3
+                    },
+                ]
+            },
+            "ivermectin" : {
+                'dose' : 1,
+                "groups" : [
+                    {
+                        'gt' : -10000000,
+                        'lwe' : 30,
+                        'clearance' : 18,
+                        'volumeOfDistribution' : 3
+                    },
+                    {
+                        'gt' : 30,
+                        'lwe' : 60,
+                        'clearance' : 16,
+                        'volumeOfDistribution' : 3.3
+                    },
+                    {
+                        'gt' : 60,
+                        'lwe' : 1000000,
+                        'clearance' : 14.8,
+                        'volumeOfDistribution' : 3.5
+                    },
+                ]
+            }
+        }
+        selectedDrug = allDrugs.get(drug.lower())
+        if selectedDrug is None:
+            selectedDrug = allDrugs.get('favipiravir')
+        clearance = selectedDrug['groups'][0]['clearance']
+        volumeOfDistribution = selectedDrug['groups'][0]['volumeOfDistribution']
+        for g in selectedDrug['groups']:
+            if age > g['gt'] and age <= g['lwe']:
+                clearance = g['clearance']
+                volumeOfDistribution = g['volumeOfDistribution']
+                break
+        if weight <= 0:
+            weight = 1.0 
+        maintenanceDose = (clearance * selectedDrug['dose']) / (volumeOfDistribution * weight) 
+        #print ("md: " + str(maintenanceDose))
+        genders = ['male', 'female']
+        #if not (gender.lower() in genders):
+        #    gender =genders[0]
+        if gender.lower() == genders[1]:
+            maintenanceDose = maintenanceDose - (maintenanceDose* 0.08)
+        #print ("md after gender: " + str(maintenanceDose))
+
+        if geo.lower() == 'europe':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.01)
+        elif geo.lower() == 'africa':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.07)
+        elif geo.lower() == 'australia':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.03)
+        elif geo.lower() == 'america':
+            maintenanceDose = maintenanceDose + (maintenanceDose* 0.02)
+        #print ("md after geo: " + str(maintenanceDose))
+
+
+        result = {
+            "maintenanceDosage" : maintenanceDose
+        }  
+        return GeneralWrapper.successResult(result)
+    except Exception as e:
+        traceback.print_exc()
+        return GeneralWrapper.generalErrorResult(e)
+
+
+
+def calculateMaintenanceDosage1(drug, weight, age, gender, geo):
+    try:
         clearanceG1 = [6.72, 0.45, 10, 1.8, 22.56, 18]
         clearanceG2 = [6.23, 0.40, 9, 1.2, 20.24, 16]
         clearanceG3 = [5.4, 0.3, 7.8, 0.9, 18.38, 14.8]
