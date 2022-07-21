@@ -30,5 +30,5 @@ class ApiKeysDataAccess:
 
     @staticmethod
     def change(id, newValue, newPlanId):
-        ApiKeys.delete(id)
-        return ApiKeys.create(newValue, newPlanId)
+        ApiKeysDataAccess.delete(id)
+        return ApiKeysDataAccess.create(newValue, newPlanId)
