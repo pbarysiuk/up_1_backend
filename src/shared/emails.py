@@ -65,7 +65,7 @@ class Email:
             server.send_message(msg)
             server.quit()
         except Exception as e:
-            traceback.print_exc(e)
+            traceback.print_exc()
 
 
     @staticmethod
@@ -101,7 +101,7 @@ class Email:
             else:
                 Email.__sendEmailSQS(toEmails, title, content)
         except Exception as e:
-            traceback.print_exc(e)
+            traceback.print_exc()
 
 
     @staticmethod

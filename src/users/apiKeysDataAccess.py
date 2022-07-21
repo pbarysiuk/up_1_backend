@@ -2,7 +2,7 @@ import boto3
 from os import environ
 from src.shared.generalHelper import GeneralHelper
 
-class ApiKeys:
+class ApiKeysDataAccess:
     @staticmethod
     def create(value, planId):
         if environ.get('LOCAL') is None:
