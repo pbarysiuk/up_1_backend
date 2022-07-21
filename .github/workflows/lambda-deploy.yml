@@ -72,6 +72,7 @@ jobs:
           #echo "::set-output name=layer::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "src/*"| xargs)"
           #echo "::set-output name=lambdas::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "lambdas/*" | xargs)"
           #echo "::set-output name=req::$(git diff --name-only --diff-filter=ACMRT `git rev-parse @~` | grep "requirements.txt" | xargs)"
+
   deploylambda:
     runs-on: ubuntu-latest
     # require the first job to have ran
@@ -108,6 +109,7 @@ jobs:
     # only run there are changed files
       - if: ${{needs.changedfiles.outputs.layer || needs.changedfiles.outputs.req}}
         name: Deploy lambda layer
+        id: deploy-lambda-layer
         run: ./.github/scripts/build-layer.sh
         env:
           FILES: ${{needs.changedfiles.outputs.layer}}
@@ -116,8 +118,18 @@ jobs:
 
       - if: ${{needs.changedfiles.outputs.lambdas}}
         name: Deploy lambda function
+        id: deploy-lambda-function
         run: ./.github/scripts/build-lambda.sh
         env:
           FILES: ${{needs.changedfiles.outputs.lambdas}}
           COMMITID: ${{ github.sha }}
           ENV: ${{ env.ENVIRONMENT }}
+
+      - name: Microsoft Teams Notification
+        uses: skitionek/notify-microsoft-teams@master
+        if: always()
+        with:
+          webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
+          needs: ${{ toJson(needs) }}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
