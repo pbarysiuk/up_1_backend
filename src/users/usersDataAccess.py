@@ -7,7 +7,8 @@ class UsersDataAccess:
     status = {
         'approved' : 1,
         'pending' : 2,
-        'deleted' : 0
+        'deleted' : 0,
+        'deactivated' : 3
     }
 
     @staticmethod
@@ -131,6 +132,37 @@ class UsersDataAccess:
             "createdAt" : 1,
             "lastChangePasswordAt" : 1,
             "status" : 1
+        }
+        if includePassword:
+            projection["password"] = 1
+        existedUser = db.users.find_one(query, projection)
+        if existedUser is None:
+            if throwExceptionIfNotFound:
+                raise BusinessException(ResponseCodes.userNotFound)
+            return None
+        return existedUser
+
+    @staticmethod
+    def getById(db, id, throwExceptionIfNotFound = True, includePassword = False):
+        query = {
+            "_id" : GeneralHelper.getObjectId(id),
+            "status": { '$ne' : UsersDataAccess.status['deleted'] }
+        }
+        projection = {
+            "name" : 1,
+            "email" : 1,
+            "role" : 1,
+            "image" : 1,
+            "linkedInId" : 1,
+            "apiKey" : 1,
+            "verifiedAt" : 1,
+            "verificationCode" : 1,
+            "createdAt" : 1,
+            "lastChangePasswordAt" : 1,
+            "status" : 1,
+            "createdBy" : 1,
+            "updatedAt" : 1,
+            "approvedAt" : 1
         }
         if includePassword:
             projection["password"] = 1
