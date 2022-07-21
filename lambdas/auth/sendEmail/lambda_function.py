@@ -15,7 +15,7 @@ def lambda_handler(event, context):
             toEmail = r['messageAttributes']['toEmail']['stringValue']
             Email.sendEmailSMTP([toEmail], title, content)
         except Exception as e:
-            traceback.print_exc(e)
+            traceback.print_exc()
     return {
         'statusCode': 200,
         'body': json.dumps('1')

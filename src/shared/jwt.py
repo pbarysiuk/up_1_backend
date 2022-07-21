@@ -28,7 +28,7 @@ class Jwt:
             usedSecret = '-----BEGIN PUBLIC KEY-----\n' + secret + '\n-----END PUBLIC KEY-----\n'
             return jwt.decode(token, usedSecret, algorithms=Jwt.__algorithm)
         except Exception as e:
-            traceback.print_exc(e)
+            traceback.print_exc()
             raise BusinessException(ResponseCodes.invalidToken)
 
     @staticmethod
