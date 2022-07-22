@@ -54,5 +54,5 @@ def initService(app):
     @app.route('/drugbank/calculateMaintenanceDosage', methods=['POST'])
     def calculateMaintenanceDosage():
         data = request.get_json(force=True)
-        return service.calculateMaintenanceDosage(data.get('drug'), data.get('weight'), data.get('age'), data.get('gender'), data.get('geo'))
+        return service.calculateMaintenanceDosage(data.get('drugs'), data.get('weight'), data.get('age'), data.get('gender'), data.get('geo'))
 
