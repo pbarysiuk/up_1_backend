@@ -185,3 +185,84 @@ class UsersDataAccess:
         }
         db.users.update_one(query, {"$set": updatedFields})
 
+    @staticmethod
+    def update(db, id, name, email, role, image):
+        setQuery={
+                "name" : name,
+                "email" : email,
+                "role" : role,
+                "image" : image,
+                "updatedAt" : datetime.now(tz=timezone.utc)
+            }
+        db.users.update_one({"_id" : id}, {"$set": setQuery})
+
+    @staticmethod
+    def delete(db, id):
+        setQuery={
+            "status" : UsersDataAccess.status['deleted'],
+            "deletedAt" : datetime.now(tz=timezone.utc)
+        }
+        db.users.update_one({"_id" : id}, {"$set": setQuery})
+
+    @staticmethod
+    def deactivate(db, id):
+        setQuery={
+            "status" : UsersDataAccess.status['deactivated'],
+            'approvedAt' : None,
+            "apiKey" : {}
+        }
+        db.users.update_one({"_id" : id}, {"$set": setQuery})
+
+    @staticmethod
+    def getList(db, criteria, pageNumber, pageSize):
+        projection = {
+            "name" : 1,
+            "email" : 1,
+            "role" : 1,
+            "image" : 1,
+            "createdAt" : 1,
+            "status" : 1
+        }
+        query = {
+            "$and" : [
+                {
+                    "status": { '$ne' : UsersDataAccess.status['deleted'] }
+                },
+                {
+                    "verifiedAt" : {'$ne' : None}
+                }
+            ]
+        }
+        if (GeneralHelper.isValidString(criteria)):
+            query["$and"].append({
+                "$or" : [
+                    {
+                        "name" : {
+                            "$regex": criteria,
+                            "$options": "i"
+                        }
+                    },
+                    {
+                        "email" : {
+                            "$regex": criteria,
+                            "$options": "i"
+                        }
+                    }
+                ]
+            })
+        items = db.users.find(query, projection).skip(pageNumber * pageSize).limit(pageSize)
+        count = db.users.count_documents(query)
+        return count, items
+
+    @staticmethod
+    def approve(db, id, keyId, keyValue):
+        apiKeyObject = {
+            'id' : keyId,
+            'value' : keyValue
+        }
+        setQuery = {
+            'apiKey' : apiKeyObject,
+            "status" : UsersDataAccess.status['approved'],
+            'approvedAt' : datetime.now(tz=timezone.utc)
+        }
+        db.users.update_one({"_id" : id}, {"$set": setQuery})
