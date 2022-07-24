@@ -18,5 +18,5 @@ def initService(flaskApp):
     def changePassword():
         headers = request.headers
         data = request.get_json(force=True)
-        return ProfileBusiness.changePassword(token=headers['auth'], oldPassword=data["oldPassword"], newPassword=data["newPassword"])
+        return ProfileBusiness.changePassword(token=headers['auth'], newPassword=data["newPassword"])
     

@@ -1,8 +1,8 @@
-from src.users.authBusiness import BusinessAuth
+from src.users.authBusiness import AuthBusiness
 from src.shared.lambdaHelper import LambdaHelper
 
 def lambda_handler(event, context):
-    body = LambdaHelper.getBodyParams(event, ['email', 'password', 'code'])
-    return BusinessAuth.verify(email=body['email'], code=body['code'], password=body['password'])
+    body = LambdaHelper.getBodyParams(event, ['email', 'code'])
+    return AuthBusiness.verify(email=body['email'], code=body['code'])
 
 

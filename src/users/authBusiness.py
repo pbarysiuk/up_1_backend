@@ -6,31 +6,31 @@ from src.shared.jwt import Jwt
 import traceback
 from src.shared.emails import Email
 from src.shared.database import Database
-from src.users.dataAccess import UsersDataAccess
+from src.users.usersDataAccess import UsersDataAccess
+from src.users.forgetPasswordRequestsDataAccess import ForgetPasswordRequestsDataAccess
 from src.shared.passwordHelper import PasswordHelper
 from src.users.wrapper import UsersWrapper
 
-class BusinessAuth:
+class AuthBusiness:
     @staticmethod
     def login(email, password):
         try:
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
             GeneralHelper.checkString(password, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkEmailFormat(email)
-
-            
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getByEmail(db, email, False, True)
             if existedUser is None:
-                raise BusinessException(ResponseCodes.wrongEmailOrPassword) 
+                raise BusinessException(ResponseCodes.wrongEmailOrPassword)
+            if existedUser['verifiedAt'] is None:
+                raise BusinessException(ResponseCodes.notVerifiedUser)
+            if existedUser['status'] != UsersDataAccess.status['approved']:
+                raise BusinessException(ResponseCodes.notApprovedUser)
             PasswordHelper.checkPassword(existedUser['password'], password, ResponseCodes.wrongEmailOrPassword)
             if existedUser['lastChangePassword'] is None:
                 firstTimeResetPasswordToken = Jwt.generateFirstTimeResetPasswordToken(userId=str(existedUser['_id']))
-                result = {
-                    "firstTimeResetPasswordToken" : firstTimeResetPasswordToken
-                }
-                return GeneralWrapper.successResult(result)   
+                return GeneralWrapper.successResult(UsersWrapper.resetPasswordFirstTimeTokenResult(firstTimeResetPasswordToken))   
             accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
             refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
             return GeneralWrapper.successResult(UsersWrapper.loginResult(existedUser, accessToken, refreshToken))
@@ -60,7 +60,6 @@ class BusinessAuth:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
         
-
     @staticmethod
     def refreshToken(refreshToken):
         try:
@@ -84,8 +83,7 @@ class BusinessAuth:
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getByEmail(db, email, True, False)
-            if not (existedUser['verifiedAt'] is None):
-                raise BusinessException(ResponseCodes.alreadyVerifiedUser)      
+            AuthBusiness.__checkEligibilityForVerify(existedUser)    
             Email.sendVerificationEmail(existedUser['email'], existedUser['verificationCode'])
             return GeneralWrapper.successResult(None)
         except BusinessException as e:
@@ -95,27 +93,19 @@ class BusinessAuth:
             return GeneralWrapper.generalErrorResult(e)
 
     @staticmethod
-    def verify(email, code, password):
+    def verify(email, code):
         try:
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
-            #GeneralHelper.checkString(password, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkString(code, ResponseCodes.emptyVerificationCode)
             GeneralHelper.checkEmailFormat(email)
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getByEmail(db, email, True, True)
-            if not (existedUser['verifiedAt'] is None):
-                raise BusinessException(ResponseCodes.alreadyVerifiedUser)  
+            AuthBusiness.__checkEligibilityForVerify(existedUser)
             if existedUser['verificationCode'] != code:
                 raise BusinessException(ResponseCodes.verificationCodeNotMatch)
-            if not GeneralHelper.isValidString(password):
-                password = existedUser['password']
-            else:
-                password = PasswordHelper.hash(password)
-            UsersDataAccess.verify(db, existedUser['_id'], password)
-            accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
-            refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
-            return GeneralWrapper.successResult(UsersWrapper.loginResult(existedUser, accessToken, refreshToken))
+            UsersDataAccess.verify(db, existedUser['_id'])
+            return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:
@@ -130,8 +120,9 @@ class BusinessAuth:
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getByEmail(db, email)
+            AuthBusiness.__checkEligibilityForForgetPassword(existedUser)
             forgetPasswordCode = GeneralHelper.generateCode()
-            insertResult = UsersDataAccess.addForgetPasswordRequest(db, existedUser['_id'], existedUser['email'], forgetPasswordCode)
+            insertResult = ForgetPasswordRequestsDataAccess.add(db, existedUser['_id'], existedUser['email'], forgetPasswordCode)
             Email.sendForgetPasswordEmail(email, forgetPasswordCode)
             return GeneralWrapper.successResult(UsersWrapper.forgetPasswordResult(insertResult.inserted_id))
         except BusinessException as e:
@@ -147,7 +138,7 @@ class BusinessAuth:
             id = GeneralHelper.getObjectId(requestId)
             dbConnection = (Database())
             db = dbConnection.db
-            existedRequest = UsersDataAccess.getForgetPaswordRequest(db, id)
+            existedRequest = ForgetPasswordRequestsDataAccess.getById(db, id)
             Email.sendForgetPasswordEmail(existedRequest['email'], existedRequest['code'])
             return GeneralWrapper.successResult(UsersWrapper.forgetPasswordResult(existedRequest['_id']))
         except BusinessException as e:
@@ -165,15 +156,13 @@ class BusinessAuth:
             id = GeneralHelper.getObjectId(requestId)
             dbConnection = (Database())
             db = dbConnection.db
-            existedRequest = UsersDataAccess.getForgetPaswordRequest(db, id)
+            existedRequest = ForgetPasswordRequestsDataAccess.getById(db, id)
             if existedRequest['code'] != code:
                 raise BusinessException(ResponseCodes.forgetPasswordCodeNotMatch)
             existedUser = UsersDataAccess.getById(db, existedRequest['userId'])
-            if existedUser['verifiedAt'] is None:
-                UsersDataAccess.updatePassword(db, existedRequest['userId'],  PasswordHelper.hash(password), True)
-            else:
-                UsersDataAccess.updatePassword(db, existedRequest['userId'],  PasswordHelper.hash(password))
-            UsersDataAccess.deleteForgetPasswordRequest(db, existedRequest['_id'])
+            AuthBusiness.__checkEligibilityForForgetPassword(existedUser)
+            UsersDataAccess.updatePassword(db, existedRequest['userId'],  PasswordHelper.hash(password))
+            ForgetPasswordRequestsDataAccess.delete(db, existedRequest['_id'])
             return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
@@ -181,3 +170,77 @@ class BusinessAuth:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
 
+    @staticmethod
+    def register(name, email, password, image):
+        try:
+            GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
+            GeneralHelper.checkString(name, ResponseCodes.emptyOrInvalidName)
+            GeneralHelper.checkEmailFormat(email)
+            dbConnection = (Database())
+            db = dbConnection.db
+            UsersDataAccess.checkUniqueEmail(db, email)
+            verificatioCode = GeneralHelper.generateCode()
+            insertResult = UsersDataAccess.add(db, name, email, PasswordHelper.hash(password), Jwt.userRole, image, verificatioCode, None, None)
+            Email.sendVerificationEmail(email, verificatioCode)
+            return GeneralWrapper.successResult(None)
+        except BusinessException as e:
+            return GeneralWrapper.errorResult(e.code, e.message)
+        except Exception as e:
+            traceback.print_exc()
+            return GeneralWrapper.generalErrorResult(e)
+
+    @staticmethod
+    def loginWithThirdParty(thrirdPartyType, thirdPartyToken):
+        try:
+            GeneralHelper.checkString(thrirdPartyType, ResponseCodes.emptyOrInvalidThirdPartyType)
+            GeneralHelper.checkString(thirdPartyToken, ResponseCodes.emptyOrInvalidThirdPartyToken)
+            allThirdPartyTypes = ['linkedin', 'apple']
+            thirdPartyToken = thirdPartyToken.lower()
+            if not (thirdPartyToken in allThirdPartyTypes):
+                raise BusinessException(ResponseCodes.emptyOrInvalidThirdPartyType)
+            #here we should decode the token and get email, name, image, third party id
+            email = 'habibfrancis95@gmail.com'
+            name = 'habib francis'
+            image = None 
+            thrirdPartyId = '12345'
+            dbConnection = (Database())
+            db = dbConnection.db
+            existedUser = UsersDataAccess.getByEmail(db, email, False, False)
+            if existedUser is None or existedUser['verifiedAt'] is None:
+                UsersDataAccess.add(db, name, email, None, Jwt.userRole, image, None, {thrirdPartyType : thrirdPartyId}, None)
+                return GeneralWrapper.successResult(None)
+            userChanged = False
+            if (not (existedUser['thirdPartyLogin'].get(thrirdPartyType) is None)) or existedUser['thirdPartyLogin'].get(thrirdPartyType) != thrirdPartyId:
+                #update thrid party login for user
+                userChanged = True
+                thirdPartyLogin = existedUser['thirdPartyLogin']
+                thirdPartyLogin[thrirdPartyType] = thrirdPartyId
+                UsersDataAccess.updateThirdPartyLogin(db, existedUser['_id'], thirdPartyLogin)
+            if existedUser['status'] != UsersDataAccess.status['approved']:
+                raise BusinessException(ResponseCodes.notApprovedUser)
+            if userChanged:
+                existedUser = UsersDataAccess.getById(db, existedUser['_id'])
+            accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            refreshToken = Jwt.generateRefreshToken(userId=str(existedUser['_id']), role=existedUser['role'])
+            return GeneralWrapper.successResult(UsersWrapper.loginResult(existedUser, accessToken, refreshToken))          
+        except BusinessException as e:
+            return GeneralWrapper.errorResult(e.code, e.message)
+        except Exception as e:
+            traceback.print_exc()
+            return GeneralWrapper.generalErrorResult(e)
+
+
+
+    @staticmethod
+    def __checkEligibilityForForgetPassword(existedUser):
+        if existedUser['verifiedAt'] is None:
+            raise BusinessException(ResponseCodes.notVerifiedUser)
+        if existedUser['status'] != UsersDataAccess.status['approved']:
+            raise BusinessException(ResponseCodes.notApprovedUser)
+
+    @staticmethod
+    def __checkEligibilityForVerify(existedUser):
+        if not (existedUser['verifiedAt'] is None):
+            raise BusinessException(ResponseCodes.alreadyVerifiedUser) 
+        if existedUser['status'] == UsersDataAccess.status['deactivated']:
+            raise BusinessException(ResponseCodes.deactivatedUser)     

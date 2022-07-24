@@ -25,6 +25,8 @@ class ResponseCodes:
     badXdlRequest = '400-17'
     emptyXdlTitle = '400-18'
     emptyVerificationCode = '400-19'
+    emptyOrInvalidThirdPartyType = '400-20'
+    emptyOrInvalidThirdPartyToken = '400-21'
 
 
 
@@ -39,8 +41,8 @@ class ResponseCodes:
     expiredToken = '403-001'
     lackOfPrivileges = '403-002'
     notVerifiedUser = '403-003'
-
-   
+    notApprovedUser = '403-004'
+    deactivatedUser = '403-005'
     
     #not found 404
     userNotFound = '404-001'

@@ -25,7 +25,7 @@ class UsersDataAccess:
             "role" : role,
             "image" : image,
             "verificationCode" : '',
-            "linkedInId" : None,
+            "thirdPartyLogin" : {},
             "apiKey" : apiKeyObject,
             "createdBy" : None,
             "verifiedAt" :  nowDate,
@@ -39,7 +39,7 @@ class UsersDataAccess:
         return db.users.insert_one(user)
 
     @staticmethod
-    def __addNew(db, name, email, password, role, image, verificationCode, linkedInId, adminId):
+    def __addNew(db, name, email, password, role, image, verificationCode, thirdPartyLogin, adminId):
         nowDate = datetime.now(tz=timezone.utc)
         lastChangePasswordAt = nowDate
         verifiedAt = None
@@ -50,8 +50,10 @@ class UsersDataAccess:
             verifiedAt = nowDate
             approvedAt = nowDate
             status = UsersDataAccess.status['approved']
-        elif not (linkedInId is None):
+        elif not (thirdPartyLogin is None):
             verifiedAt = nowDate
+        if thirdPartyLogin is None:
+            thirdPartyLogin = {}
         user = {
             "name" : name,
             "email" : email,
@@ -59,7 +61,7 @@ class UsersDataAccess:
             "role" : role,
             "image" : image,
             "verificationCode" : verificationCode,
-            "linkedInId" : linkedInId,
+            "thirdPartyLogin" : thirdPartyLogin,
             "apiKey" : {},
             "createdBy" : adminId,
             "verifiedAt" :  verifiedAt,
@@ -85,11 +87,11 @@ class UsersDataAccess:
         return existedUser
     
     @staticmethod
-    def add(db, name, email, password, role, image, verificationCode, linkedInId, adminId):
+    def add(db, name, email, password, role, image, verificationCode, thirdPartyLogin, adminId):
         existedUser = UsersDataAccess.__getNotVerifiedByEmail(db, email)
         if not (existedUser is None):
             UsersDataAccess.__forceDelete(db, existedUser['_id'])
-        return UsersDataAccess.__addNew(db, name, email, password, role, image, verificationCode, linkedInId, adminId)
+        return UsersDataAccess.__addNew(db, name, email, password, role, image, verificationCode, thirdPartyLogin, adminId)
     
     @staticmethod
     def checkUniqueEmail(db, email, id = None):
@@ -125,7 +127,7 @@ class UsersDataAccess:
             "email" : 1,
             "role" : 1,
             "image" : 1,
-            "linkedInId" : 1,
+            "thirdPartyLogin" : 1,
             "apiKey" : 1,
             "verifiedAt" : 1,
             "verificationCode" : 1,
@@ -153,7 +155,7 @@ class UsersDataAccess:
             "email" : 1,
             "role" : 1,
             "image" : 1,
-            "linkedInId" : 1,
+            "thirdPartyLogin" : 1,
             "apiKey" : 1,
             "verifiedAt" : 1,
             "verificationCode" : 1,
@@ -266,3 +268,25 @@ class UsersDataAccess:
             'approvedAt' : datetime.now(tz=timezone.utc)
         }
         db.users.update_one({"_id" : id}, {"$set": setQuery})
+
+    @staticmethod
+    def verify(db, id):
+        query = {
+            '_id' : id
+        }
+        setQuery = {
+            'verifiedAt' : datetime.now(tz=timezone.utc)
+        }
+        db.users.update_one(query, {"$set": setQuery})
+        return
+
+    @staticmethod
+    def updateThirdPartyLogin(db, id, thirdPartyLogin):
+        query = {
+            '_id' : id
+        }
+        setQuery = {
+            'thirdPartyLogin' : thirdPartyLogin
+        }
+        db.users.update_one(query, {"$set": setQuery})
+        return

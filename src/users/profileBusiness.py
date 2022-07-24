@@ -6,23 +6,21 @@ from src.shared.generalWrapper import GeneralWrapper
 from src.shared.jwt import Jwt
 import traceback
 from src.shared.database import Database
-from src.users.dataAccess import UsersDataAccess
+from src.users.usersDataAccess import UsersDataAccess
 from src.shared.passwordHelper import PasswordHelper
 from src.users.wrapper import UsersWrapper
 
 
 class ProfileBusiness:
     @staticmethod
-    def changePassword(token, oldPassword, newPassword):
+    def changePassword(token, newPassword):
         try:
             payload = Jwt.checkAccessToken(token=token)
-            GeneralHelper.checkString(oldPassword, ResponseCodes.emptyOrInvalidPassword)
             GeneralHelper.checkString(newPassword, ResponseCodes.emptyOrInvalidPassword)
             dbConnection = (Database())
             db = dbConnection.db
             userId = GeneralHelper.getObjectId(payload["id"])
             existedUser = UsersDataAccess.getById(db, userId, includePassword=True)
-            PasswordHelper.checkPassword(existedUser["password"], oldPassword, ResponseCodes.oldPasswordNotMatch)
             UsersDataAccess.updatePassword(db, existedUser['_id'], PasswordHelper.hash(newPassword))
             return GeneralWrapper.successResult(UsersWrapper.profileResult(existedUser))
         except BusinessException as e:
