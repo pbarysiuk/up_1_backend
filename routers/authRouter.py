@@ -52,4 +52,4 @@ def initService(flaskApp):
     @flaskApp.route('/auth/loginWith3rdParty', methods=['POST'])
     def loginWithThirdParty():
         data = request.get_json(force=True)
-        return AuthBusiness.loginWithThirdParty(thrirdPartyType=data["thrirdPartyType"], thirdPartyToken=data["thirdPartyToken"])
+        return AuthBusiness.loginWithThirdParty(thrirdPartyType=data["thirdPartyType"], thirdPartyToken=data["thirdPartyToken"])

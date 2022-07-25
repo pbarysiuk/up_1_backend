@@ -183,7 +183,24 @@ class UsersDataAccess:
         }
         updatedFields = {
             'password' : password,
-            'lastChangePassword' : datetime.now(tz=timezone.utc)
+            'lastChangePasswordAt' : datetime.now(tz=timezone.utc)
+        }
+        db.users.update_one(query, {"$set": updatedFields})
+
+    @staticmethod
+    def updatePasswordAndApiKey(db, id, password, keyId, keyValue):
+        query = {
+            '_id' : id,
+            'deletedAt' : None
+        }
+        apiKeyObject = {
+            'id' : keyId,
+            'value' : keyValue
+        }
+        updatedFields = {
+            'apiKey' : apiKeyObject,
+            'password' : password,
+            'lastChangePasswordAt' : datetime.now(tz=timezone.utc)
         }
         db.users.update_one(query, {"$set": updatedFields})
 

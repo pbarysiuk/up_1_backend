@@ -10,6 +10,8 @@ from src.users.usersDataAccess import UsersDataAccess
 from src.users.forgetPasswordRequestsDataAccess import ForgetPasswordRequestsDataAccess
 from src.shared.passwordHelper import PasswordHelper
 from src.users.wrapper import UsersWrapper
+from src.users.apiKeysDataAccess import ApiKeysDataAccess
+from os import environ
 
 class AuthBusiness:
     @staticmethod
@@ -28,7 +30,7 @@ class AuthBusiness:
             if existedUser['status'] != UsersDataAccess.status['approved']:
                 raise BusinessException(ResponseCodes.notApprovedUser)
             PasswordHelper.checkPassword(existedUser['password'], password, ResponseCodes.wrongEmailOrPassword)
-            if existedUser['lastChangePassword'] is None:
+            if existedUser['lastChangePasswordAt'] is None:
                 firstTimeResetPasswordToken = Jwt.generateFirstTimeResetPasswordToken(userId=str(existedUser['_id']))
                 return GeneralWrapper.successResult(UsersWrapper.resetPasswordFirstTimeTokenResult(firstTimeResetPasswordToken))   
             accessToken = Jwt.generateAccessToken(userId=str(existedUser['_id']), role=existedUser['role'])
@@ -50,9 +52,10 @@ class AuthBusiness:
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getById(db, userId)
-            if not (existedUser['lastChangePassword'] is None):
+            if not (existedUser['lastChangePasswordAt'] is None):
                 raise BusinessException(ResponseCodes.alreadyResettedPasswordFirstTime)
-            UsersDataAccess.updatePassword(db, existedUser['_id'], PasswordHelper.hash(password))    
+            apiKey = ApiKeysDataAccess.create(existedUser['_id'], GeneralHelper.generateGUID(), environ.get('USAGE_PLAN_ID'))
+            UsersDataAccess.updatePasswordAndApiKey(db, existedUser['_id'], PasswordHelper.hash(password), apiKey['id'], apiKey['value'])    
             return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
@@ -195,8 +198,8 @@ class AuthBusiness:
             GeneralHelper.checkString(thrirdPartyType, ResponseCodes.emptyOrInvalidThirdPartyType)
             GeneralHelper.checkString(thirdPartyToken, ResponseCodes.emptyOrInvalidThirdPartyToken)
             allThirdPartyTypes = ['linkedin', 'apple']
-            thirdPartyToken = thirdPartyToken.lower()
-            if not (thirdPartyToken in allThirdPartyTypes):
+            thrirdPartyType = thrirdPartyType.lower()
+            if not (thrirdPartyType in allThirdPartyTypes):
                 raise BusinessException(ResponseCodes.emptyOrInvalidThirdPartyType)
             #here we should decode the token and get email, name, image, third party id
             email = 'habibfrancis95@gmail.com'

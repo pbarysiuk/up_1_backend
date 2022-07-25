@@ -21,7 +21,7 @@ class UsersWrapper:
             result['thrirdPartyLogin'] = {} if item['thirdPartyLogin'] is None else item['thirdPartyLogin']
             result['apiKey'] = item['apiKey'].get('value')
             result['lastChangePasswordAt'] = None if item['lastChangePasswordAt'] is None else str(item['lastChangePasswordAt'].isoformat())
-            result['updatedAt'] = None if item['updatedAt'] is None else str(item['updatedAt'].isoformat())
+            #result['updatedAt'] = None if item['updatedAt'] is None else str(item['updatedAt'].isoformat())
         return result
 
 
