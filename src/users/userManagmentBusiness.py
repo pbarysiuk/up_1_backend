@@ -8,9 +8,11 @@ from src.shared.jwt import Jwt
 from src.shared.generalWrapper import GeneralWrapper
 import traceback
 from src.shared.emails import Email
-from src.users.dataAccess import UsersDataAccess
 from src.shared.passwordHelper import PasswordHelper
 from src.users.wrapper import UsersWrapper
+from src.users.usersDataAccess import UsersDataAccess
+from src.users.apiKeysDataAccess import ApiKeysDataAccess
+from os import environ
 
 class UserManagmentBusiness:
     @staticmethod
@@ -22,16 +24,19 @@ class UserManagmentBusiness:
     def insertDefaultUser():
         dbConnection = (Database())
         db = dbConnection.db
-        count  = UsersDataAccess.getCountOfNotDeletedUsers(db)
-        if count > 0:
-            return 'Already found admin users'
-        UsersDataAccess.insertUser(db, "admin", "admin@prepaire.com", PasswordHelper.hash("Prepaire@dmin"), "admin", None, None, True)
+        userName = "admin"
+        email = "admin@prepaire.com"
+        password = "Prepaire@dmin"
+        role = "admin"
+        apiKey = ApiKeysDataAccess.create("defaultUser", GeneralHelper.generateGUID(), environ.get("USAGE_PLAN_ID"))
+        UsersDataAccess.addDefault(db, userName, email, PasswordHelper.hash(password), role, None, apiKey['id'], apiKey['value'])
         return "done!"
 
     @staticmethod
     def addUser(token, name, email, role, image):
         try:
-            Jwt.checkAccessToken(token, [Jwt.adminRole])
+            tokenPayload = Jwt.checkAccessToken(token, [Jwt.adminRole])
+            adminId = tokenPayload['id']
             GeneralHelper.checkString(email, ResponseCodes.emptyOrInvalidEmail)
             GeneralHelper.checkString(role, ResponseCodes.emptyOrInvalidRole)
             GeneralHelper.checkString(name, ResponseCodes.emptyOrInvalidName)
@@ -42,7 +47,7 @@ class UserManagmentBusiness:
             UsersDataAccess.checkUniqueEmail(db, email)
             password = GeneralHelper.generateGUID()
             verificatioCode = GeneralHelper.generateCode()
-            insertResult = UsersDataAccess.insertUser(db, name, email, PasswordHelper.hash(password), role.lower(), image, verificatioCode)
+            insertResult = UsersDataAccess.add(db, name, email, PasswordHelper.hash(password), role, image, verificatioCode, None, adminId)
             Email.sendCreateUserEmail(email, password)
             existedUser = UsersDataAccess.getById(db, insertResult.inserted_id)
             return GeneralWrapper.successResult(UsersWrapper.detailsResult(existedUser))
@@ -52,7 +57,6 @@ class UserManagmentBusiness:
             traceback.print_exc()
             return GeneralWrapper.generalErrorResult(e)
 
-    
     @staticmethod
     def updateUser(token, userId, name, email, role, image):
         try:
@@ -84,6 +88,8 @@ class UserManagmentBusiness:
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getById(db, userId)
+            if not (existedUser['apiKey'].get('id') is None):
+                ApiKeysDataAccess.delete(existedUser['apiKey'].get('id'))
             UsersDataAccess.delete(db, userId)
             return GeneralWrapper.successResult(None)
         except BusinessException as e:
@@ -117,6 +123,64 @@ class UserManagmentBusiness:
             db = dbConnection.db
             count, items = UsersDataAccess.getList(db, criteria, pageNumber, pageSize)
             return GeneralWrapper.successResult(UsersWrapper.listResult(items, count))      
+        except BusinessException as e:
+            return GeneralWrapper.errorResult(e.code, e.message)
+        except Exception as e:
+            traceback.print_exc()
+            return GeneralWrapper.generalErrorResult(e)
+
+    @staticmethod
+    def deactivateUser(token, userId):
+        try:
+            Jwt.checkAccessToken(token, [Jwt.adminRole])
+            userId = GeneralHelper.getObjectId(userId)
+            dbConnection = (Database())
+            db = dbConnection.db
+            existedUser = UsersDataAccess.getById(db, userId)
+            if not (existedUser['apiKey'].get('id') is None):
+                ApiKeysDataAccess.delete(existedUser['apiKey'].get('id'))
+            if existedUser['status'] == UsersDataAccess.status['deactivated']:
+                return GeneralWrapper.successResult(None)
+            UsersDataAccess.deactivate(db, userId)
+            return GeneralWrapper.successResult(None)
+        except BusinessException as e:
+            return GeneralWrapper.errorResult(e.code, e.message)
+        except Exception as e:
+            traceback.print_exc()
+            return GeneralWrapper.generalErrorResult(e)
+
+    @staticmethod
+    def approveUser(token, userId):
+        try:
+            Jwt.checkAccessToken(token, [Jwt.adminRole])
+            userId = GeneralHelper.getObjectId(userId)
+            dbConnection = (Database())
+            db = dbConnection.db
+            existedUser = UsersDataAccess.getById(db, userId)
+            if existedUser['status'] == UsersDataAccess.status['approved']:
+                return GeneralWrapper.successResult(None)
+            apiKey = ApiKeysDataAccess.create(existedUser['_id'], GeneralHelper.generateGUID(), environ.get('USAGE_PLAN_ID'))
+            UsersDataAccess.approve(db, userId, apiKey['id'], apiKey['value'])
+            return GeneralWrapper.successResult(None)
+        except BusinessException as e:
+            return GeneralWrapper.errorResult(e.code, e.message)
+        except Exception as e:
+            traceback.print_exc()
+            return GeneralWrapper.generalErrorResult(e)
+
+    @staticmethod
+    def changeApiKeyForUser(token, userId):
+        try:
+            Jwt.checkAccessToken(token, [Jwt.adminRole])
+            userId = GeneralHelper.getObjectId(userId)
+            dbConnection = (Database())
+            db = dbConnection.db
+            existedUser = UsersDataAccess.getById(db, userId)
+            if existedUser['apiKey'].get('id') is None:
+                return GeneralWrapper.successResult(None)
+            apiKey = ApiKeysDataAccess.change(existedUser['apiKey'].get('id'), existedUser['_id'], GeneralHelper.generateGUID(), environ.get('USAGE_PLAN_ID'))
+            UsersDataAccess.updateApiKey(db, existedUser['_id'], apiKey['id'], apiKey['value'])
+            return GeneralWrapper.successResult(None)
         except BusinessException as e:
             return GeneralWrapper.errorResult(e.code, e.message)
         except Exception as e:

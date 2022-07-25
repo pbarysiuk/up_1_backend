@@ -35,4 +35,17 @@ def initService(flaskApp):
         args = request.args
         return UserManagmentBusiness.getUsersList(token=headers['auth'], pageNumber=args.get("page", default=0, type=int), pageSize=args.get("pageSize", default=10, type=int), criteria=unquote(args.get("query", default="", type=str)) )
 
-    
+    @flaskApp.route('/usersManagement/deactivate/<string:id>', methods=['PUT'])
+    def deacivateUser(id):
+        headers = request.headers
+        return UserManagmentBusiness.deactivateUser(token=headers['auth'], userId=id)
+
+    @flaskApp.route('/usersManagement/approve/<string:id>', methods=['PUT'])
+    def approveUser(id):
+        headers = request.headers
+        return UserManagmentBusiness.approveUser(token=headers['auth'], userId=id)
+
+    @flaskApp.route('/usersManagement/changeApiKey/<string:id>', methods=['PUT'])
+    def changeApiKeyForUser(id):
+        headers = request.headers
+        return UserManagmentBusiness.changeApiKeyForUser(token=headers['auth'], userId=id)

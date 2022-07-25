@@ -37,7 +37,14 @@ class ResponseMessages:
         ResponseCodes.verificationCodeNotMatch : "Verification code not match",
         ResponseCodes.notVerifiedUser : "User not verified",
         ResponseCodes.alreadyVerifiedUser : "User already verified",
-        ResponseCodes.alreadyResettedPasswordFirstTime : "User already reseted password"
+        ResponseCodes.alreadyResettedPasswordFirstTime : "User already reseted password",
+        ResponseCodes.notApprovedUser : "User is not approved by admin",
+        ResponseCodes.deactivatedUser : "User account is deactivated",
+        ResponseCodes.emptyOrInvalidThirdPartyType : "Empty or invalid third party type",
+        ResponseCodes.emptyOrInvalidThirdPartyToken : "Empty or invalid third party token",
+
+         
+
         
         
         
