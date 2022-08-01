@@ -23,13 +23,13 @@ class AuthBusiness:
             dbConnection = (Database())
             db = dbConnection.db
             existedUser = UsersDataAccess.getByEmail(db, email, False, True)
+            PasswordHelper.checkPassword(existedUser['password'], password, ResponseCodes.wrongEmailOrPassword)
             if existedUser is None:
                 raise BusinessException(ResponseCodes.wrongEmailOrPassword)
             if existedUser['verifiedAt'] is None:
                 raise BusinessException(ResponseCodes.notVerifiedUser)
             if existedUser['status'] != UsersDataAccess.status['approved']:
                 raise BusinessException(ResponseCodes.notApprovedUser)
-            PasswordHelper.checkPassword(existedUser['password'], password, ResponseCodes.wrongEmailOrPassword)
             if existedUser['lastChangePasswordAt'] is None:
                 firstTimeResetPasswordToken = Jwt.generateFirstTimeResetPasswordToken(userId=str(existedUser['_id']))
                 return GeneralWrapper.successResult(UsersWrapper.resetPasswordFirstTimeTokenResult(firstTimeResetPasswordToken))   
