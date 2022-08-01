@@ -36,9 +36,9 @@ class ResponseCodes:
     oldPasswordNotMatch = '401-003' 
     forgetPasswordCodeNotMatch = '401-004'
     verificationCodeNotMatch = '401-005'
-
+    expiredToken = '401-006'
+    
     #forbidden 403
-    expiredToken = '403-001'
     lackOfPrivileges = '403-002'
     notVerifiedUser = '403-003'
     notApprovedUser = '403-004'

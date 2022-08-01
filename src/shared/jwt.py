@@ -9,8 +9,8 @@ import traceback
 
 class Jwt:
     __algorithm="EdDSA"
-    __accessTokenDuration=10 #access token is valid for 30 min
-    __refreshTokenDuration=43200 #refresh token is valid for a month
+    __accessTokenDuration=2 #access token is valid for 30 min
+    __refreshTokenDuration=10 #refresh token is valid for a month
     __firstTimeResetPasswordTokenDuration=30
 
     userRole = "user"
