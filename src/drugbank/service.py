@@ -303,62 +303,68 @@ def query(user_query: str, page: int, category: str):
                     "$options": "i"
                 }
             }, {"name" : 1}).skip(page * 10).limit(10)
-        else:
-            molecules = db.molecules.find({
+            names = [o['name'] for o in molecules]
+            columns = ["cid", "drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
+            where_query = {
+                "name" : {
+                    "$in" : names
+                } 
+            }
+            drugs = db.drugs.find(where_query, columns)
+            count = db.molecules.count_documents({
                 "name" : {
                     "$regex": user_query,
                     "$options": "i"
                 }
-            }, {"name" : 1})
-        names = [o['name'] for o in molecules]
-        or_query = {
-            "name" : {
-                "$in" : names
-            } 
-        }
-        columns = ["cid", "drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
-                "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
-        '''
-        or_query = {
-            '$or': [
-                {
-                    "clinical_description": {
-                        "$regex": user_query,
-                        "$options": "i"
-                    }
-                },
-                {
-                    "name": {
-                        "$regex": user_query,
-                        "$options": "i"
-                    }
-                },
-                {
-                    "synonyms.synonym": {
-                        "$regex": user_query,
-                        "$options": "i"
-                    }
-                }
-            ]
-        }
-        '''
-        where_query = {
-            "$and": [
-                or_query,
-            ],
-        }
-        hint = None
-        if category is not None:
-            where_query["$and"].append({"categories.drugbank_id": category})
-            hint = [('categories.drugbank_id', pymongo.ASCENDING)]
-        drugs = None
-        if category is not None:
-            drugs = db.drugs.find(where_query, columns, hint = hint).skip(page * 10).limit(10)
+            })
+            result = {"count": count, "items": list(drugs)}
+            return GeneralWrapper.successResult(result)
         else:
-            drugs = db.drugs.find(where_query, columns, hint = hint)
-        count = db.drugs.count_documents(where_query)
-        result = {"count": count, "items": list(drugs)}
-        return GeneralWrapper.successResult(result)
+            
+            or_query = {
+                "name" : {
+                    "$regex": user_query,
+                    "$options": "i"
+                }
+            }
+            columns = ["cid", "drugbank_id", "name", "clinical_description", "chemical_properties", "calculated_properties",
+                    "experimental_properties", "synonyms", "structured_adverse_effects", "structured_contraindications"]
+            '''
+            or_query = {
+                '$or': [
+                    {
+                        "clinical_description": {
+                            "$regex": user_query,
+                            "$options": "i"
+                        }
+                    },
+                    {
+                        "name": {
+                            "$regex": user_query,
+                            "$options": "i"
+                        }
+                    },
+                    {
+                        "synonyms.synonym": {
+                            "$regex": user_query,
+                            "$options": "i"
+                        }
+                    }
+                ]
+            }
+            '''
+            where_query = {
+                "$and": [
+                    or_query,
+                ],
+            }
+            where_query["$and"].append({"categories.drugbank_id": category})
+            drugs = None
+            drugs = db.drugs.find(where_query, columns).skip(page * 10).limit(10)
+            count = db.drugs.count_documents(where_query)
+            result = {"count": count, "items": list(drugs)}
+            return GeneralWrapper.successResult(result)
     except Exception as e:
         traceback.print_exc()
         return GeneralWrapper.generalErrorResult(e)
