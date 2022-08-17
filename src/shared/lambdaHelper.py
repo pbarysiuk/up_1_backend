@@ -1,6 +1,7 @@
 from json import loads
 import boto3
 from os import environ
+from urllib.parse import unquote
 
 class LambdaHelper:
 
@@ -33,7 +34,7 @@ class LambdaHelper:
             return float(value)
         elif type == LambdaHelper.valueTypeInt:
             return int(value)
-        return value
+        return unquote(value)
 
     @staticmethod
     def getQueryStringParam(event, key, type = 'string', defaultValue = None):
