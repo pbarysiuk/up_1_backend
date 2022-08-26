@@ -179,6 +179,7 @@ class AuthPolicy(object):
             }
         }
 
+
         policy['policyDocument']['Statement'].extend(self._getStatementForEffect('Allow', self.allowMethods))
         policy['policyDocument']['Statement'].extend(self._getStatementForEffect('Deny', self.denyMethods))
 
