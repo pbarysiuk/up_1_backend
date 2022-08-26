@@ -12,3 +12,26 @@ __pycache__/
 test.py
 test1.py
 test2.py
+
+# Ignore terraform files
+.terraform*
+.terraform/
+terraform.tfplan
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+*.tfplan
+.vscode
+build
+terraform.tfstate.backup
+decrypted_secrets
+Gemfile.lock
+account.tfplan
+*/*/.terraform
+*/*.zip
+**.zip
+*.retry
+.DS_store
+.DS_Store
+.idea
+historical-builds

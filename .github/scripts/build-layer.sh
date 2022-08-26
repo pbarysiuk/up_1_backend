@@ -7,9 +7,9 @@ python -m pip install -r requirements.txt --target python
 cp -rf src python/
 zip -r backend-lambda-layer-$COMMITID.zip python/
 
-aws s3 cp backend-lambda-layer-$COMMITID.zip s3://prepaire-$ENV-lambda-artifact-us/layers/
+aws s3 cp backend-lambda-layer-$COMMITID.zip s3://prepaire-$ENV-lambda-artifact-us1/layers/
 
-aws lambda publish-layer-version --layer-name backend-layer-$ENV --content S3Bucket=prepaire-$ENV-lambda-artifact-us,S3Key=layers/backend-lambda-layer-$COMMITID.zip --compatible-runtimes python3.9
+aws lambda publish-layer-version --layer-name backend-layer-$ENV --content S3Bucket=prepaire-$ENV-lambda-artifact-us1,S3Key=layers/backend-lambda-layer-$COMMITID.zip --compatible-runtimes python3.9
 
 layerArn=`aws lambda list-layer-versions --layer-name backend-layer-$ENV --region us-east-1 --query 'LayerVersions[0].LayerVersionArn' --output text`
 
