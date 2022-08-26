@@ -125,11 +125,11 @@ jobs:
           COMMITID: ${{ github.sha }}
           ENV: ${{ env.ENVIRONMENT }}
 
-      - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@master
-        if: always()
-        with:
-          webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
-          needs: ${{ toJson(needs) }}
-          job: ${{ toJson(job) }}
-          steps: ${{ toJson(steps) }}
+      # - name: Microsoft Teams Notification
+      #   uses: skitionek/notify-microsoft-teams@master
+      #   if: always()
+      #   with:
+      #     webhook_url: ${{ secrets.TEAMS_WEBHOOK }}
+      #     needs: ${{ toJson(needs) }}
+      #     job: ${{ toJson(job) }}
+      #     steps: ${{ toJson(steps) }}
