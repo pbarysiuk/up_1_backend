@@ -7,6 +7,7 @@ from src.shared.exceptions.responseCodes import ResponseCodes
 from src.shared.lambdaHelper import LambdaHelper
 import traceback
 
+
 class Jwt:
     __algorithm="EdDSA"
     __accessTokenDuration=2 #access token is valid for 30 min
